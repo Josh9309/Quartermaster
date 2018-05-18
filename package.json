@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/Josh9309/Quartermaster#readme",
   "dependencies": {
-    "discord.js": "11.3.2"
+    "discord.js": "^11.3.2"
   }
 }
