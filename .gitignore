@@ -1,0 +1,3 @@
+#Quartermaster Bot Git Ignore file
+token.json
+*node_modules
