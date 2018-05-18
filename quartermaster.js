@@ -1,7 +1,7 @@
 // require the discord.js module
 const Discord = require('discord.js');
 const config = require('./config.json');
-const token = require('./token.json'); //Hold the bot token
+//const token = require('./token.json'); //Hold the bot token
 
 // create a new Discord client
 const client = new Discord.Client();
