@@ -55,15 +55,12 @@ client.on('message', message => {
             console.log('Pong, but in the console');
             break;
         case `${config.prefix}server`:
-            embed.setThumbnail(message.guild.icon); //Sets the embed thumbnail
-            embed.addField('This server\'s name is:', `${ message.guild.name }`);
-            embed.addField('Total members:', `${ message.guild.memberCount }`);
-            message.channel.send(embed); //Send the message to the channel
-
+            embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
-            embed.addField('This server\'s name is:', `${message.guild.name}`);
             embed.addField('Total members:', `${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
+
+            message.send(message.guild);
             break;
 
         //Not a command
