@@ -32,8 +32,7 @@ client.on('message', message => {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
-    console.log(message.guild.presences);
-    console.log(message.guild.presences[0]);
+
     //Command handling
     //Alphabetical order
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
@@ -50,19 +49,42 @@ client.on('message', message => {
             embed.setFooter("\nNow pipe down before I make ye walk the plank."); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
             break;
+        //Ping the bot to make sure it's online
         case `${config.prefix}ping`:
             //Send back "Pong" to the channel the message was sent in
             message.channel.send('Pong');
             console.log('Pong, but in the console');
             break;
+        //Return server info
         case `${config.prefix}server`:
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
-            embed.addField('Server owner:', `@${message.guild.owner}`);
+            embed.addField('Server owner:', `${message.guild.owner}`);
             embed.addField('Total members:', `${message.guild.memberCount}`);
+            message.channel.send(embed); //Send the message to the channel
+            break;
+        //Return the requested user's information
+        case `${settings.prefix}userinfo`:
+            //The user who's information is being requested
+            let requestedUser = messageArray[1].toLowerCase();
 
-            //for (var i = 0; i < message.guild.presences)
-            //embed.addField('Members online:', `${message.guild.memberCount}`);
+            //If there is no requested user
+            if (!requestedUser) {
+                message.channel.send('Usage: !userinfo {username}'); //Send the message to the channel
+                break;
+            }
+
+            message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
+
+            embed.setAuthor(requestedUser.username, requestedUser.avatarURL); //Returns the user's username and avatar
+            embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
+            embed.addField('Nickname:', `${requestedUser}`); //Returns the user's nickname
+            embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
+
+            //If the user is playing a game
+            if (requestedUser.presence.game !== null)
+                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`); //Returns the user's game
+
             message.channel.send(embed); //Send the message to the channel
             break;
 
