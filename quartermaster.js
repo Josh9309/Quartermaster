@@ -86,6 +86,7 @@ client.on('message', message => {
 
                 embed.setColor(requestedGuildMember.displayHexColor);
                 embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
+                embed.setDescription("Some garbo");
                 embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
                 embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`, true); //Returns the user's full username with four-digit discriminator
                 embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
@@ -93,10 +94,19 @@ client.on('message', message => {
 
                 //If the user is playing a game
                 if (requestedUser.presence.game !== null)
-                    embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
+                    embed.addField('Currently playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
 
-                embed.addField('Muted:', `${requestedGuildMember.mute}`, true); //If the user is muted or not
-                embed.addField('Bot:', `${requestedUser.bot}`, true); //If the user is a bot or not
+                //If the user is muted or not
+                if (requestedGuildMember.mute)
+                    embed.addField('Muted:', 'Yes');
+                else
+                    embed.addField('Muted:', 'No');
+
+                //If the user is a bot or not
+                if (requestedUser.bot)
+                    embed.addField('Bot:', 'Yes');
+                else
+                    embed.addField('Bot:', 'No');
 
                 message.channel.send(embed); //Send the message to the channel
             }
