@@ -47,7 +47,7 @@ client.on('message', message => {
             embed.addField('!server', 'Lists some information about this server');
             embed.addField('!userinfo {username}', 'Returns some information on the requested user');
 
-            embed.setFooter("\nNow pipe down before I make ye walk the plank."); //The Quartermaster's footer
+            embed.setFooter('\nNow pipe down before I make ye walk the plank.'); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
             break;
         //Ping the bot to make sure it's online
@@ -86,7 +86,6 @@ client.on('message', message => {
 
                 embed.setColor(requestedGuildMember.displayHexColor);
                 embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
-                embed.setDescription("Some garbo");
                 embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
                 embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`, true); //Returns the user's full username with four-digit discriminator
                 embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
@@ -104,9 +103,7 @@ client.on('message', message => {
 
                 //If the user is a bot or not
                 if (requestedUser.bot)
-                    embed.addField('Bot:', 'Yes');
-                else
-                    embed.addField('Bot:', 'No');
+                    embed.setFooter('This user is a bot');
 
                 message.channel.send(embed); //Send the message to the channel
             }
