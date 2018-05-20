@@ -72,13 +72,13 @@ client.on('message', message => {
             }
 
             //The user who's information is being requested
-            let requestedUser = message.guild.fetchMember(messageArray[1]);
+            let requestedUser = message.mentions.users.first();
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
-            console.log(requestedUser);
+
             embed.setColor(requestedUser.displayHexColor);
-            embed.setAuthor(requestedUser.nickname, requestedUser.user.avatarURL); //Returns the user's username and avatar
-            embed.addField('Username:', `${requestedUser.displayName}#${requestedUser.user.discriminator}`); //Returns the user's full username with four-digit discriminator
+            embed.setAuthor(requestedUser.nickname, requestedUser.avatarURL); //Returns the user's username and avatar
+            embed.addField('Username:', `${requestedUser.displayName}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
             embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
 
             //If the user is playing a game
