@@ -73,7 +73,7 @@ client.on('message', message => {
 
             //The user who's information is being requested
             let requestedUser = message.mentions.users.first(); //The user as they relate to Discord
-            let requestedGuildMember = message.guild.fetchMember(messageArray[1]); //The user as they relate to the guild
+            let requestedGuildMember = message.guild.member(requestedUser); //The user as they relate to the guild
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
 
