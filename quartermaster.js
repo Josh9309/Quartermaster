@@ -33,7 +33,7 @@ client.on('message', message => {
         return;
     }
     console.log(message.guild.presences);
-    console.log(message.guild.presences[0].status);
+    console.log(message.guild.presences[0]);
     //Command handling
     //Alphabetical order
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
