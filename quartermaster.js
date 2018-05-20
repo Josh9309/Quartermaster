@@ -72,18 +72,18 @@ client.on('message', message => {
             }
 
             //The user who's information is being requested
-            let requestedUser = messageArray[1].toLowerCase();
+            let requestedUser = guild.fetchMember(messageArray[1].toLowerCase());
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
 
-            embed.setAuthor(requestedUser.username, requestedUser.avatarURL); //Returns the user's username and avatar
-            embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
-            embed.addField('Nickname:', `${requestedUser}`); //Returns the user's nickname
-            //embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
+            embed.setColor(requestedUser.displayHexColor);
+            embed.setAuthor(requestedUser.nickname, requestedUser.user.avatarURL); //Returns the user's username and avatar
+            embed.addField('Username:', `${requestedUser.displayName}#${requestedUser.user.discriminator}`); //Returns the user's full username with four-digit discriminator
+            embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
 
             //If the user is playing a game
-            //if (requestedUser.presence.game !== null)
-            //    embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`); //Returns the user's game
+            if (requestedUser.presence.game !== null)
+                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`); //Returns the user's game
 
             message.channel.send(embed); //Send the message to the channel
             break;
