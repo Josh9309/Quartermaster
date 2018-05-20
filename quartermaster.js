@@ -1,3 +1,5 @@
+//Quartermaster
+
 // require the discord.js module
 const Discord = require('discord.js');
 const config = require('./config.json');
@@ -15,7 +17,20 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
-	console.log(message.content);
+    console.log(message.content);
+
+    //Don't let bots message this bot
+    if (message.author.bot)
+        return;
+
+    //Respond if the user is pinging Meme-chan
+    if (command === `<@${bot.user.id}>`) {
+        message.channel.send(`Hello ${message.author}.`);
+        return;
+    }
+
+    command.toLowerCase(); //Set the command to be lowercased
+
 	if(message.content.startsWith(`${config.prefix}ping`)){
 		//Send back "Pong" to the channel the message was sent in
 		message.channel.send('Pong');
