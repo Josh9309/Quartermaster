@@ -64,7 +64,7 @@ client.on('message', message => {
             message.channel.send(embed); //Send the message to the channel
             break;
         //Return the requested user's information
-        case `${settings.prefix}userinfo`:
+        case `${config.prefix}userinfo`:
             //The user who's information is being requested
             let requestedUser = messageArray[1].toLowerCase();
 
