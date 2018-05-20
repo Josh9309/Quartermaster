@@ -24,12 +24,12 @@ client.on('message', message => {
         return;
 
     //Respond if the user is pinging Meme-chan
-    if (command === `<@${bot.user.id}>`) {
+    if (message.content.startsWith(`<@${bot.user.id}>`)) {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
 
-    //command.toLowerCase(); //Set the command to be lowercased
+    message.content.toLowerCase(); //Set the command to be lowercased
 
 	if(message.content.startsWith(`${config.prefix}ping`)){
 		//Send back "Pong" to the channel the message was sent in
