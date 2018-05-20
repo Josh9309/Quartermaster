@@ -32,7 +32,8 @@ client.on('message', message => {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
-    console.log(message.guild);
+    console.log(message.guild.presences);
+    console.log(message.guild.presences[0].status);
     //Command handling
     //Alphabetical order
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
@@ -57,7 +58,11 @@ client.on('message', message => {
         case `${config.prefix}server`:
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
+            embed.addField('Server owner:', `@${message.guild.ownerID}`);
             embed.addField('Total members:', `${message.guild.memberCount}`);
+
+            //for (var i = 0; i < message.guild.presences)
+            //embed.addField('Members online:', `${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
             break;
 
