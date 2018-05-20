@@ -40,7 +40,7 @@ client.on('message', message => {
     switch (command) {
         //Return information on this bot's commands
         case `${config.prefix}help`:
-            message.channel.send(`These are my commands, ${message.author}.`); //Send the message to the channel
+            message.channel.send(`These are my commands, ${message.author}`); //Send the message to the channel
 
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
             embed.addField('!help', 'Brings up this help scroll');
@@ -80,18 +80,18 @@ client.on('message', message => {
             //https://discord.js.org/#/docs/main/stable/class/GuildMember
             let requestedGuildMember = message.guild.member(requestedUser);
 
-            message.channel.send(`This be the warrant out on ${message.author}.`); //Send the message to the channel
+            message.channel.send(`This be the warrant out on ${message.author}`); //Send the message to the channel
 
             embed.setColor(requestedGuildMember.displayHexColor);
             embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
             embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
-            embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
-            embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
-            embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
+            embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`, true); //Returns the user's full username with four-digit discriminator
+            embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, false); //Returns the user's highest role
+            embed.addField('Status:', `${requestedUser.presence.status}`, true); //Returns the user's online status
 
             //If the user is playing a game
             if (requestedUser.presence.game !== null)
-                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
+                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, false); //Returns the user's game
 
             embed.addField('Muted:', `${requestedGuildMember.mute}`); //If the user is muted or not
 
