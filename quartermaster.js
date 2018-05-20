@@ -22,14 +22,14 @@ client.on('message', message => {
     //Don't let bots message this bot
     if (message.author.bot)
         return;
-
+    console.log(client.user);
     //Respond if the user is pinging Meme-chan
     if (message.content.startsWith(`<@${client.user.id}>`)) {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
 
-    message.content.toLowerCase(); //Set the command to be lowercased
+    message.content = message.content.toLowerCase(); //Set the command to be lowercased
 
 	if(message.content.startsWith(`${config.prefix}ping`)){
 		//Send back "Pong" to the channel the message was sent in
