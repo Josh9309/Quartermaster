@@ -72,13 +72,14 @@ client.on('message', message => {
             }
 
             //The user who's information is being requested
-            let requestedUser = message.mentions.users.first();
+            let requestedUser = message.mentions.users.first(); //The user as they relate to Discord
+            let requestedGuildMember = message.guild.fetchMember(messageArray[1]); //The user as they relate to the guild
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
 
-            embed.setColor(requestedUser.displayHexColor);
-            embed.setAuthor(requestedUser.nickname, requestedUser.avatarURL); //Returns the user's username and avatar
-            embed.addField('Username:', `${requestedUser.displayName}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
+            embed.setColor(requestedGuildMember.displayHexColor);
+            embed.setAuthor(requestedGuildMember.nickname, requestedUser.avatarURL); //Returns the user's username and avatar
+            embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
             embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
 
             //If the user is playing a game
