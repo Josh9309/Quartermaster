@@ -86,12 +86,12 @@ client.on('message', message => {
             embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
             embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
             embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`, true); //Returns the user's full username with four-digit discriminator
-            embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, false); //Returns the user's highest role
+            embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
             embed.addField('Status:', `${requestedUser.presence.status}`, true); //Returns the user's online status
 
             //If the user is playing a game
             if (requestedUser.presence.game !== null)
-                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, false); //Returns the user's game
+                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
 
             embed.addField('Muted:', `${requestedGuildMember.mute}`); //If the user is muted or not
 
