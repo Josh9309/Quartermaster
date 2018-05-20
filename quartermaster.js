@@ -22,21 +22,22 @@ client.on('message', message => {
     //Don't let bots message this bot
     if (message.author.bot)
         return;
-    console.log(client.user);
-    //Respond if the user is pinging Meme-chan
-    if (message.content.startsWith(`<@${client.user.id}>`)) {
+
+    let messageArray = message.content.split(' '); //Split the incoming message on spaces
+    let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
+
+    //Respond if the user is pinging the bot
+    if (command === `${client.user.id}` || command === '@bot') {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
 
-    message.content = message.content.toLowerCase(); //Set the command to be lowercased
-
-	if(message.content.startsWith(`${config.prefix}ping`)){
+    if (command === `${config.prefix}ping`){
 		//Send back "Pong" to the channel the message was sent in
 		message.channel.send('Pong');
-		console.log('pong');
+		console.log('Pong, but in the console');
 	}
-	else if(message.content === `${config.prefix}server`){
+    else if (command === `${config.prefix}server`){
 		message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
     }
 
