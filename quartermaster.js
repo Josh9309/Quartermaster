@@ -58,7 +58,7 @@ client.on('message', message => {
         case `${config.prefix}server`:
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
-            embed.addField('Server owner:', `@${message.guild.ownerID}`);
+            embed.addField('Server owner:', `@${message.guild.owner}`);
             embed.addField('Total members:', `${message.guild.memberCount}`);
 
             //for (var i = 0; i < message.guild.presences)
