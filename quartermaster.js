@@ -61,14 +61,13 @@ client.on('message', message => {
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
             embed.addField('Server owner:', `${message.guild.owner}`);
-            embed.addBlankField(false); //Space
             embed.addField('Total members:', `${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
             break;
         //Return the requested user's information
         case `${config.prefix}userinfo`:
             //If there is no requested user
-            if (messageArray[1] === undefined) {
+            if (messageArray[1] === undefined || ) {
                 message.channel.send('Usage: !userinfo {username}'); //Send the message to the channel
                 break;
             }
@@ -81,22 +80,29 @@ client.on('message', message => {
             //https://discord.js.org/#/docs/main/stable/class/GuildMember
             let requestedGuildMember = message.guild.member(requestedUser);
 
-            message.channel.send(`This be the warrant out on ${message.author}`); //Send the message to the channel
+            //If this is a member
+            if (requestedUser && requestedGuildMember) {
+                message.channel.send(`This be the warrant out on ${requestedGuildMember.nickname}`); //Send the message to the channel
 
-            embed.setColor(requestedGuildMember.displayHexColor);
-            embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
-            embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
-            embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`, true); //Returns the user's full username with four-digit discriminator
-            embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
-            embed.addField('Status:', `${requestedUser.presence.status}`, true); //Returns the user's online status
+                embed.setColor(requestedGuildMember.displayHexColor);
+                embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
+                embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
+                embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`, true); //Returns the user's full username with four-digit discriminator
+                embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
+                embed.addField('Status:', `${requestedUser.presence.status}`, true); //Returns the user's online status
 
-            //If the user is playing a game
-            if (requestedUser.presence.game !== null)
-                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
+                //If the user is playing a game
+                if (requestedUser.presence.game !== null)
+                    embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
 
-            embed.addField('Muted:', `${requestedGuildMember.mute}`); //If the user is muted or not
+                embed.addField('Muted:', `${requestedGuildMember.mute}`); //If the user is muted or not
+                embed.addField('Bot:', `${requestedUser.bot}`, true); //If the user is a bot or not
 
-            message.channel.send(embed); //Send the message to the channel
+                message.channel.send(embed); //Send the message to the channel
+            }
+            else {
+                message.channel.send('Yar, it appears ye be tryin\' to get info on a role, not a user.'); //Send the message to the channel
+            }
             break;
 
         //Not a command
