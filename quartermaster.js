@@ -17,6 +17,7 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+    //Post the message to the console
     console.log(message.content);
 
     //Don't let bots message this bot
@@ -27,18 +28,26 @@ client.on('message', message => {
     let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
 
     //Respond if the user is pinging the bot
-    if (command === `${client.user.id}` || command === '@bot') {
+    if (command === `<@!${client.user.id}>` || command === '@bot') {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
 
-    if (command === `${config.prefix}ping`){
-		//Send back "Pong" to the channel the message was sent in
-		message.channel.send('Pong');
-		console.log('Pong, but in the console');
-	}
-    else if (command === `${config.prefix}server`){
-		message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
+    //Command handling
+    switch (command) {
+        case `${config.prefix}ping`:
+            //Send back "Pong" to the channel the message was sent in
+            message.channel.send('Pong');
+            console.log('Pong, but in the console');
+            break;
+        case `${config.prefix}server`:
+            message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
+            break;
+
+        //Not a command
+        default:
+            message.channel.send(`${command} isn't a command. Type !help for a list commands.`); //Tell the user that whatever they typed isn't a command
+            break;
     }
 
     return; //Exit the message handler
