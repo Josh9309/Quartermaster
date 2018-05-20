@@ -32,7 +32,7 @@ client.on('message', message => {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
-
+    console.log(message.guild);
     //Command handling
     //Alphabetical order
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
@@ -59,8 +59,6 @@ client.on('message', message => {
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
             embed.addField('Total members:', `${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
-
-            message.channel.send(message.guild);
             break;
 
         //Not a command
