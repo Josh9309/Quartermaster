@@ -32,16 +32,32 @@ client.on('message', message => {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
-
+    console.log(message.guild);
     //Command handling
+    //Alphabetical order
+    let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
+    embed.setColor('#F1C428'); //Set the Quartermaster's embed color
     switch (command) {
+        //Return information on this bot's commands
+        case `${config.prefix}help`:
+            message.channel.send(`These are my commands, ${message.author}.`); //Send the message to the channel
+
+            embed.setAuthor('The Quartermaster\'s Commands', bot.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
+            embed.addField('!help', 'Brings up this help scroll');
+            embed.addField('!server', 'Lists some information about this server');
+
+            embed.setFooter("Now pipe down before I make ye walk the plank."); //The Quartermaster's footer
+            message.channel.send(embed); //Send the message to the channel
+            break;
         case `${config.prefix}ping`:
             //Send back "Pong" to the channel the message was sent in
             message.channel.send('Pong');
             console.log('Pong, but in the console');
             break;
         case `${config.prefix}server`:
+            //embed.setThumbnail(message.guild); //Sets the command title and returns the Quartermaster's avatar
             message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
+            message.channel.send(embed); //Send the message to the channel
             break;
 
         //Not a command
