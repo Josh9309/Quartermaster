@@ -46,7 +46,7 @@ client.on('message', message => {
             embed.addField('!help', 'Brings up this help scroll');
             embed.addField('!server', 'Lists some information about this server');
 
-            embed.setFooter("Now pipe down before I make ye walk the plank."); //The Quartermaster's footer
+            embed.setFooter("\nNow pipe down before I make ye walk the plank."); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
             break;
         case `${config.prefix}ping`:
@@ -55,8 +55,14 @@ client.on('message', message => {
             console.log('Pong, but in the console');
             break;
         case `${config.prefix}server`:
-            embed.setThumbnail(message.guild.icon); //Sets the command title and returns the Quartermaster's avatar
-            message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
+            embed.setThumbnail(message.guild.icon); //Sets the embed thumbnail
+            embed.addField('This server\'s name is:', `${ message.guild.name }`);
+            embed.addField('Total members:', `${ message.guild.memberCount }`);
+            message.channel.send(embed); //Send the message to the channel
+
+            embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
+            embed.addField('This server\'s name is:', `${message.guild.name}`);
+            embed.addField('Total members:', `${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
             break;
 
