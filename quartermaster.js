@@ -79,11 +79,11 @@ client.on('message', message => {
             embed.setAuthor(requestedUser.username, requestedUser.avatarURL); //Returns the user's username and avatar
             embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
             embed.addField('Nickname:', `${requestedUser}`); //Returns the user's nickname
-            embed.addField('Status:', `${requestedUser.presence}`); //Returns the user's online status
+            //embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
 
             //If the user is playing a game
-            if (requestedUser.presence.game !== null)
-                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`); //Returns the user's game
+            //if (requestedUser.presence.game !== null)
+            //    embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`); //Returns the user's game
 
             message.channel.send(embed); //Send the message to the channel
             break;
