@@ -45,6 +45,7 @@ client.on('message', message => {
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
             embed.addField('!help', 'Brings up this help scroll');
             embed.addField('!server', 'Lists some information about this server');
+            embed.addField('!userinfo {username}', 'Returns some information on the requested user');
 
             embed.setFooter("\nNow pipe down before I make ye walk the plank."); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
@@ -71,20 +72,28 @@ client.on('message', message => {
                 break;
             }
 
-            //The user who's information is being requested
-            let requestedUser = message.mentions.users.first(); //The user as they relate to Discord
-            let requestedGuildMember = message.guild.member(requestedUser); //The user as they relate to the guild
+            //The user as they relate to Discord
+            //https://discord.js.org/#/docs/main/stable/class/User
+            let requestedUser = message.mentions.users.first();
 
-            message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
+            //The user as they relate to the guild
+            //https://discord.js.org/#/docs/main/stable/class/GuildMember
+            let requestedGuildMember = message.guild.member(requestedUser);
+
+            message.channel.send(`This be the warrant out on ${message.author}.`); //Send the message to the channel
 
             embed.setColor(requestedGuildMember.displayHexColor);
-            embed.setAuthor(requestedGuildMember.nickname, requestedUser.avatarURL); //Returns the user's username and avatar
+            embed.setTitle(`${requestedGuildMember.nickname}`); //Set the user's nickname as the title
+            embed.setThumbnail(requestedUser.avatarURL); //Set the user's avatar as the thumbnail
             embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
+            embed.addField('Highest role:', `${requestedGuildMember.highestRole}`, true); //Returns the user's highest role
             embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
 
             //If the user is playing a game
             if (requestedUser.presence.game !== null)
-                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`); //Returns the user's game
+                embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
+
+            embed.addField('Muted:', `${requestedGuildMember.mute}`); //If the user is muted or not
 
             message.channel.send(embed); //Send the message to the channel
             break;
