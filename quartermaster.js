@@ -95,13 +95,13 @@ client.on('message', message => {
                 if (requestedUser.presence.game !== null)
                     embed.addField('Currently Playing:', `${requestedUser.presence.game.name}`, true); //Returns the user's game
 
-                embed.addField('Muted:', `${requestedGuildMember.mute}`); //If the user is muted or not
+                embed.addField('Muted:', `${requestedGuildMember.mute}`, true); //If the user is muted or not
                 embed.addField('Bot:', `${requestedUser.bot}`, true); //If the user is a bot or not
 
                 message.channel.send(embed); //Send the message to the channel
             }
             else {
-                message.channel.send('Yar, it appears ye be tryin\' to get info on a role, not a user.'); //Send the message to the channel
+                message.channel.send('Yar, it appears ye be tryin\' to get info on a role and not a user. Try that again and I\'ll have ye walk the plank!'); //Send the message to the channel
             }
             break;
 
