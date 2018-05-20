@@ -65,21 +65,21 @@ client.on('message', message => {
             break;
         //Return the requested user's information
         case `${config.prefix}userinfo`:
-            //The user who's information is being requested
-            let requestedUser = messageArray[1].toLowerCase();
-
             //If there is no requested user
-            if (!requestedUser) {
+            if (messageArray[1] === undefined) {
                 message.channel.send('Usage: !userinfo {username}'); //Send the message to the channel
                 break;
             }
+
+            //The user who's information is being requested
+            let requestedUser = messageArray[1].toLowerCase();
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
 
             embed.setAuthor(requestedUser.username, requestedUser.avatarURL); //Returns the user's username and avatar
             embed.addField('Username:', `${requestedUser.username}#${requestedUser.discriminator}`); //Returns the user's full username with four-digit discriminator
             embed.addField('Nickname:', `${requestedUser}`); //Returns the user's nickname
-            embed.addField('Status:', `${requestedUser.presence.status}`); //Returns the user's online status
+            embed.addField('Status:', `${requestedUser.presence}`); //Returns the user's online status
 
             //If the user is playing a game
             if (requestedUser.presence.game !== null)
