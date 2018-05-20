@@ -60,7 +60,7 @@ client.on('message', message => {
             embed.addField('Total members:', `${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
 
-            message.send(message.guild);
+            message.channel.send(message.guild);
             break;
 
         //Not a command
