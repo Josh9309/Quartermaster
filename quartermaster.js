@@ -29,7 +29,7 @@ client.on('message', message => {
         return;
     }
 
-    command.toLowerCase(); //Set the command to be lowercased
+    //command.toLowerCase(); //Set the command to be lowercased
 
 	if(message.content.startsWith(`${config.prefix}ping`)){
 		//Send back "Pong" to the channel the message was sent in
@@ -38,7 +38,9 @@ client.on('message', message => {
 	}
 	else if(message.content === `${config.prefix}server`){
 		message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
-	}
+    }
+
+    return; //Exit the message handler
 });
 
 // login to Discord with your app's token
