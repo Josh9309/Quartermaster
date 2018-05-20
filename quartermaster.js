@@ -19,9 +19,9 @@ client.on('ready', () => {
 client.on('message', message => {
     console.log(message.content);
 
-    //Don't let bots message this bot
-    if (message.author.bot)
-        return;
+    ////Don't let bots message this bot
+    //if (message.author.bot)
+    //    return;
 
     //Respond if the user is pinging Meme-chan
     if (message.content.startsWith(`<@${bot.user.id}>`)) {
