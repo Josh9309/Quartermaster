@@ -67,7 +67,7 @@ client.on('message', message => {
         //Return the requested user's information
         case `${config.prefix}userinfo`:
             //If there is no requested user
-            if (messageArray[1] === undefined || ) {
+            if (messageArray[1] === undefined) {
                 message.channel.send('Usage: !userinfo {username}'); //Send the message to the channel
                 break;
             }
