@@ -32,7 +32,7 @@ client.on('message', message => {
         message.channel.send(`Hello ${message.author}.`);
         return;
     }
-    console.log(message.guild);
+
     //Command handling
     //Alphabetical order
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
@@ -42,7 +42,7 @@ client.on('message', message => {
         case `${config.prefix}help`:
             message.channel.send(`These are my commands, ${message.author}.`); //Send the message to the channel
 
-            embed.setAuthor('The Quartermaster\'s Commands', bot.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
+            embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
             embed.addField('!help', 'Brings up this help scroll');
             embed.addField('!server', 'Lists some information about this server');
 
@@ -55,7 +55,7 @@ client.on('message', message => {
             console.log('Pong, but in the console');
             break;
         case `${config.prefix}server`:
-            //embed.setThumbnail(message.guild); //Sets the command title and returns the Quartermaster's avatar
+            embed.setThumbnail(message.guild.icon); //Sets the command title and returns the Quartermaster's avatar
             message.channel.send(`This server's name is: ${message.guild.name} \nTotal members: ${message.guild.memberCount}`);
             message.channel.send(embed); //Send the message to the channel
             break;
