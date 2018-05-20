@@ -75,7 +75,7 @@ client.on('message', message => {
             let requestedUser = message.guild.fetchMember(messageArray[1]);
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
-            console.log(requestedUser.user);
+            console.log(requestedUser);
             embed.setColor(requestedUser.displayHexColor);
             embed.setAuthor(requestedUser.nickname, requestedUser.user.avatarURL); //Returns the user's username and avatar
             embed.addField('Username:', `${requestedUser.displayName}#${requestedUser.user.discriminator}`); //Returns the user's full username with four-digit discriminator
