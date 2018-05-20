@@ -72,7 +72,7 @@ client.on('message', message => {
             }
 
             //The user who's information is being requested
-            let requestedUser = message.guild.fetchMember(messageArray[1].toLowerCase());
+            let requestedUser = message.guild.fetchMember(messageArray[1]);
 
             message.channel.send(`Here you go ${message.author}!`); //Send the message to the channel
             console.log(requestedUser.user);
