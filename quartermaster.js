@@ -46,7 +46,7 @@ client.on('message', message => {
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
             embed.addField('!help', 'Brings up this help scroll');
             embed.addField('!server', 'Lists some information about this server');
-            embed.addField('!userinfo {username}', 'Returns some information on the requested user');
+            embed.addField('!userinfo @{username}', 'Returns some information on the requested user');
 
             embed.setFooter('\nNow pipe down before I make ye walk the plank.'); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
@@ -69,7 +69,7 @@ client.on('message', message => {
         case `${config.prefix}userinfo`:
             //If there is no requested user
             if (messageArray[1] === undefined) {
-                message.channel.send('Usage: !userinfo {username}'); //Send the message to the channel
+                message.channel.send('Usage: !userinfo @{username}'); //Send the message to the channel
                 break;
             }
 
