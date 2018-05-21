@@ -21,7 +21,8 @@ client.on('message', message => {
     console.log(message.content);
 
     //Don't let bots message this bot
-    if (message.author.bot)
+    //Ignore messages that aren't commands
+    if (message.author.bot || !command.startsWith(config.prefix))
         return;
 
     let messageArray = message.content.split(' '); //Split the incoming message on spaces
