@@ -21,5 +21,7 @@ To run and build Quartermaster simply install node.js and install discord.js usi
 ## Current Commands
 | Command | Description |
 |---------|-------------|
-|`!server`| Will provide the server name and number of members |
+|`!help`| Provides a list of commands the bot responds to |
 |`!ping`  | Quartermaster will respond with Pong |
+|`!server`| Will provide the server name and number of members |
+|`!userinfo @{username}`  | Provides some information on the requested user |
