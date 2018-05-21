@@ -20,13 +20,13 @@ client.on('message', message => {
     //Post the message to the console
     console.log(message.content);
 
+    let messageArray = message.content.split(' '); //Split the incoming message on spaces
+    let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
+
     //Don't let bots message this bot
     //Ignore messages that aren't commands
     if (message.author.bot || !command.startsWith(config.prefix))
         return;
-
-    let messageArray = message.content.split(' '); //Split the incoming message on spaces
-    let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
 
     //Respond if the user is pinging the bot
     if (command === `<@!${client.user.id}>` || command === '@bot') {
