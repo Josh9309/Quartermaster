@@ -23,16 +23,17 @@ client.on('message', message => {
     let messageArray = message.content.split(' '); //Split the incoming message on spaces
     let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
 
+    //Respond if the user is pinging the bot
+    //Also make sure this isn't another bot
+    if (!message.author.bot && (command === `<@!${client.user.id}>` || command === '@bot')) {
+        message.channel.send(`Hello ${message.author}.`);
+        return;
+    }
+
     //Don't let bots message this bot
     //Ignore messages that aren't commands
     if (message.author.bot || !command.startsWith(config.prefix))
         return;
-
-    //Respond if the user is pinging the bot
-    if (command === `<@!${client.user.id}>` || command === '@bot') {
-        message.channel.send(`Hello ${message.author}.`);
-        return;
-    }
 
     //Command handling
     //Alphabetical order
