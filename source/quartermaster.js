@@ -59,7 +59,8 @@ client.on('message', message => {
             console.log('Pong, but in the console');
             break;
         //Return server info
-        case `${config.prefix}server`:
+        //Ignore DMs
+        case `${config.prefix}server` && !message.channel.type === 'dm':
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
             embed.addField('Server owner:', `${message.guild.owner}`);
