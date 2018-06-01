@@ -1,10 +1,10 @@
 {
   "name": "quartermaster",
   "version": "1.0.0",
-  "description": "Quartermaster is a discord bot that is designed to provide easy game event creation for server members. Quartermaster will allow members to easily created and join game event plans and will also provide basic mod/ quailty of life info/tasks.",
-  "main": "quartermaster.js",
+  "description": "Quartermaster is a Discord bot that is designed to provide easy game event creation for server members. Quartermaster will allow members to easily created and join game event plans and will also provide basic mod/ quailty of life info/tasks.",
+  "main": "source/quartermaster.js",
   "scripts": {
-	"start" : "node quartermaster.js",
+	"start" : "node source/quartermaster.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

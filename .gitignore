@@ -1,3 +1,6 @@
 #Quartermaster Bot Git Ignore file
 token.json
 *node_modules
+
+#Visual Studio auto-generated folder
+.vs
