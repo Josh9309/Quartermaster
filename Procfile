@@ -1,1 +1,1 @@
-worker: node quartermaster.js
+worker: node source/quartermaster.js
