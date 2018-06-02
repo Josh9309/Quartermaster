@@ -69,8 +69,10 @@ client.on('message', message => {
         //Return server info
         case `${config.prefix}server`:
             //Ignore DMs
-            if (message.channel.type === 'dm')
+            if (message.channel.type === 'dm') {
                 message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+                break;
+            }
 
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
@@ -81,8 +83,10 @@ client.on('message', message => {
         //Return the requested user's information
         case `${config.prefix}userinfo`:
             //Ignore DMs
-            if (message.channel.type === 'dm')
+            if (message.channel.type === 'dm') {
                 message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+                break;
+            }
 
             //If there is no requested user
             if (messageArray[1] === undefined) {
