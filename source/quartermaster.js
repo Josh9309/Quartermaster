@@ -37,17 +37,21 @@ client.on('message', message => {
 
     //Command handling
     //Alphabetical order
+    //Make sure to separate commands that don't work in DMs
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
     embed.setColor('#F1C428'); //Set the Quartermaster's embed color
     switch (command) {
+        ///
+        ///These commands work in both servers and DMs
+        ///
         //Return information on this bot's commands
         case `${config.prefix}help`:
             message.channel.send(`These are my commands, ${message.author}`); //Send the message to the channel
 
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
-            embed.addField('!help', 'Brings up this help scroll');
-            embed.addField('!server', 'Lists some information about this server');
-            embed.addField('!userinfo @{username}', 'Returns some information on the requested user');
+            embed.addField(`${config.prefix}help`, 'Brings up this help scroll');
+            embed.addField(`${config.prefix}server`, 'Lists some information about this server');
+            embed.addField(`${config.prefix}userinfo @{username}`, 'Returns some information on the requested user');
 
             embed.setFooter('\nNow pipe down before I make ye walk the plank.'); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
@@ -58,9 +62,16 @@ client.on('message', message => {
             message.channel.send('Pong');
             console.log('Pong, but in the console');
             break;
+
+        ///
+        ///These commands only work in a server
+        ///
         //Return server info
-        //Ignore DMs
-        case `${config.prefix}server` && !message.channel.type === 'dm':
+        case `${config.prefix}server`:
+            //Ignore DMs
+            if (message.channel.type === 'dm')
+                message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+
             embed.setTitle(`${message.guild.name}`);
             embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
             embed.addField('Server owner:', `${message.guild.owner}`);
@@ -69,9 +80,13 @@ client.on('message', message => {
             break;
         //Return the requested user's information
         case `${config.prefix}userinfo`:
+            //Ignore DMs
+            if (message.channel.type === 'dm')
+                message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+
             //If there is no requested user
             if (messageArray[1] === undefined) {
-                message.channel.send('Usage: !userinfo @{username}'); //Send the message to the channel
+                message.channel.send(`Usage: ${command} @{username}`); //Send the message to the channel
                 break;
             }
 
@@ -115,7 +130,9 @@ client.on('message', message => {
             }
             break;
 
-        //Not a command
+        ///
+        ///Not a command
+        ///
         default:
             message.channel.send(`${command} isn't a command. Type !help for a list commands.`); //Tell the user that whatever they typed isn't a command
             break;
