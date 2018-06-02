@@ -52,6 +52,7 @@ client.on('message', message => {
             embed.addField(`${config.prefix}help`, 'Brings up this help scroll');
             embed.addField(`${config.prefix}server`, 'Lists some information about this server');
             embed.addField(`${config.prefix}userinfo @{username}`, 'Returns some information on the requested user');
+			embed.addField(`${config.prefix}event`, 'Launches Event Creation');
 
             embed.setFooter('\nNow pipe down before I make ye walk the plank.'); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
@@ -134,6 +135,10 @@ client.on('message', message => {
             }
             break;
 
+		case `${config.prefix}event`:
+			message.channel.send('Will Launch event creation code!');
+			break;
+			
         ///
         ///Not a command
         ///

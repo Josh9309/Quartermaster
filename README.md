@@ -25,3 +25,4 @@ To run and build Quartermaster simply install node.js and install discord.js usi
 |`!ping`  | Quartermaster will respond with Pong |
 |`!server`| Will provide the server name and number of members |
 |`!userinfo @{username}`  | Provides some information on the requested user |
+|'!event | Launches game event creation |
