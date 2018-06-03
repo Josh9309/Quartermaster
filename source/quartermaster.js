@@ -8,6 +8,11 @@ const config = require('./config.json');
 // create a new Discord client
 const client = new discord.Client();
 
+if(process.env.TEST_MODE == true){ 
+  console.log("QuarterMaster Bot is in Test Mode and cannot be used"); 
+  return; 
+} 
+
 // when the client is ready, run this code
 // this event will trigger whenever your bot:
 // - finishes logging in
