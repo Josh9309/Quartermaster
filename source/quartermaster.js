@@ -3,6 +3,8 @@
 // require the discord.js module
 const discord = require('discord.js');
 const config = require('./config.json');
+const events = require('./event.js');
+
 //const token = require('./token.json'); //Hold the bot token
 
 // create a new Discord client
@@ -45,6 +47,7 @@ client.on('message', message => {
     //Make sure to separate commands that don't work in DMs
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
     embed.setColor('#F1C428'); //Set the Quartermaster's embed color
+	
     switch (command) {
         ///
         ///These commands work in both servers and DMs
@@ -142,6 +145,8 @@ client.on('message', message => {
 
 		case `${config.prefix}event`:
 			message.channel.send('Will Launch event creation code!');
+			var discordUser = message.author;
+			events.CreateEvent(discordUser, client);
 			break;
 			
         ///
@@ -156,4 +161,5 @@ client.on('message', message => {
 });
 
 // login to Discord with your app's token
-client.login(process.env.TOKEN);
+//client.login(process.env.TOKEN);
+client.login('NDQ2OTA3MTgzOTMwNTQwMDMy.DeDpOw.jOITswbyKxAqrqRP_lBXJGfmDxM');
