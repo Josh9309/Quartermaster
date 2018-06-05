@@ -1,5 +1,7 @@
 const Discord = require('discord.js');
 
+eventChannels = new Map(); //Map holds corresonding event channels based on server id [serverID, Channel];
+
 var DateTime = Object.seal({
 	month: 00,
 	day: 00,
@@ -14,24 +16,28 @@ var event = Object.seal({
 	description: "Description goes here",
     game: "GAME!!!!",
 	time: DateTime,
-	accepted: {},
-	maybe: {},
-	declined:{},
-    creator:{}
+	accepted: ["--------"],
+	maybe: ["---------"],
+	declined:["-------"],
+    creator:{},
+    server:{}, //Holds a Guild Object representing the server
+    message: {} //holds event mesaage sent to eventChannel
 });
 
-var GameEvents = [];
+GameEvents = new Map(); //Map holds the events that are active in a server [ServerId, EventArray];
 
-exports.CreateEvent = function (eventCreator, client){
-    var channel; 
+exports.CreateEvent = function (eventCreator, client, server){
     var newEvent = event;
     newEvent.creator = eventCreator;
+    newEvent.server = server;
+    newEvent.accepted= [server.members.find('user', eventCreator).nickname];
+    
 	eventCreator.send('Here are ye event creation instructions!');
 	eventCreator.sendMessage('What be the name of ye event?').then( message=>{
         const filter = m => m.author === eventCreator;
           message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']})
             .then( collected => {
-                newEvent.title = collected.first();
+                newEvent.title = collected.first().content;
                 eventCreator.sendMessage(`Ye title be: ${newEvent.title}`);
                 SetEventDescription(eventCreator, newEvent);
             })
@@ -49,7 +55,7 @@ function SetEventDescription(eventCreator, newEvent){
     eventCreator.send('Excellent Matey! Now what be ye description for the event?').then(message=>{
         const filter = m => m.author === eventCreator;
         message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']}).then(collected =>{
-            newEvent.description = collected.first();
+            newEvent.description = collected.first().content;
             eventCreator.send(`Ye Description be : ${newEvent.description}`);
             SetEventGame(eventCreator, newEvent);
         })
@@ -66,7 +72,7 @@ function SetEventGame(eventCreator, newEvent){
     eventCreator.send('Ay and what be ye Game for this endeavor?').then(message=>{
         const filter = m => m.author === eventCreator;
         message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']}).then(collected =>{
-            newEvent.game = collected.first();
+            newEvent.game = collected.first().content;
             eventCreator.send(`Da Game be : ${newEvent.game}`);
             SetEventDateTime(eventCreator, newEvent);
         })
@@ -109,25 +115,72 @@ function SetEventDateTime(eventCreator, newEvent){
     });
 };
 
-function PostEvent(newEvent){
+function DisplayEvent(gameEvent, channel, storeMessage){
     let eventMessage = new Discord.RichEmbed();
     
     eventMessage.setTitle("Wanted Event!");
     eventMessage.setColor('#F1C428');
-    eventMessage.setAuthor(newEvent.creator.username, newEvent.creator.avatarURL);
+    eventMessage.setAuthor(gameEvent.creator.username, gameEvent.creator.avatarURL);
     
     //Event Title
-    eventMessage.addField('Title', newEvent.title);
-    eventMessage.addField('Description', newEvent.description);
-    eventMessage.addField('Game', newEvent.game);
-    eventMessage.addField('Date & Time', `${newEvent.time.month}/${newEvent.time.day}/${newEvent.time.year} ${newEvent.time.hour}:${newEvent.time.minute}${newEvent.time.period}`);
+    eventMessage.addField('Title', gameEvent.title);
+    eventMessage.addField('Description', gameEvent.description);
+    eventMessage.addField('Game', gameEvent.game);
+    eventMessage.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${gameEvent.time.hour}:${gameEvent.time.minute}${gameEvent.time.period}`);
     
-    eventMessage.addField("Accepted Crew:", newEvent.accepted, true);
-    eventMessage.addField("Maybe Crew:", newEvent.maybe, true);
-    eventMessage.addField("Declined Crew:", newEvent.declined, true);
+    eventMessage.addField("Accepted Crew:", gameEvent.accepted, true);
+    eventMessage.addField("Maybe Crew:", gameEvent.maybe, true);
+    eventMessage.addField("Declined Crew:", gameEvent.declined, true);
+    if(storeMessage == true){
+        channel.send(eventMessage).then(message =>{
+            gameEvent.message = message;
+            
+            GameEvents.get(gameEvent.server.id).push(gameEvent);
+        
+            channel.fetchMessage(gameEvent.message.id).then(message=> message.react('✅'));
+            channel.fetchMessage(gameEvent.message.id).then(message=> message.react('❓'));
+            channel.fetchMessage(gameEvent.message.id).then(message=> message.react('❌'));
+            
+            
+        });
+    }
+    else{channel.send(eventMessage);}
+};
+
+function PostEvent(newEvent){
+    DisplayEvent(newEvent, newEvent.creator, false); //Show Event to creator
     
-    newEvent.creator.send(eventMessage);
-    newEvent.creator.send('If dis message be correct, Respond with a yes');
+    newEvent.creator.send('If dis message be correct, Respond with a yes').then( message=>{
+        const filter = m => true;
+        message.channel.awaitMessages(filter, {max:1, time:120000, errors: ['time']}).then(collected =>{
+            console.log(collected.first().content);
+            if(collected.first().content === 'yes')
+            {
+                newEvent.creator.send('Gotcha, I be letting the crew know then!');
+                var eventChannel = eventChannels.get(newEvent.server.id);
+                //channels.find('name', 'upcoming-quests');
+                
+                DisplayEvent(newEvent, eventChannel, true);       
+            }
+            else if(collected.first().content === 'no'){
+                newEvent.creator.send('Oops okay, Lets try Again!');
+            }
+            else{
+                throw 'Bad Format';
+            }
+        })
+        .catch(error =>  {
+            console.dir(error);
+            if(error === 'time'){
+              newEvent.creator.send('Time ran out restart Event creation to try again!');
+            }
+            if(error === 'Bad Format')
+            {
+                newEvent.creator.send('Oy We be needing a yes or a no answer!');
+                PostEvent(newEvent);
+            }
+        });
+    })
 };
 
 //Parses String into a DateTime Object

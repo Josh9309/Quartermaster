@@ -21,6 +21,14 @@ if(process.env.TEST_MODE == true){
 // - reconnects after disconnecting
 client.on('ready', () => {
     console.log('Ready!');
+    
+    client.guilds.every(guild=>{
+        console.log(guild.name);
+        GameEvents.set(guild.id, []); //creates an entry in game events map for each server
+        var channel = guild.channels.find('name', 'upcoming-quests');
+        console.log(channel.name);
+        eventChannels.set(guild.id, channel);
+    });
 });
 
 client.on('message', message => {
@@ -146,7 +154,7 @@ client.on('message', message => {
 		case `${config.prefix}event`:
 			message.channel.send('Will Launch event creation code!');
 			var discordUser = message.author;
-			events.CreateEvent(discordUser, client);
+			events.CreateEvent(discordUser, client, message.guild);
 			break;
 			
         ///
@@ -160,5 +168,72 @@ client.on('message', message => {
     return; //Exit the message handler
 });
 
+//Handles the reactions
+client.on('messageReactionAdd', reactMessage=>{
+    var messageGuild =reactMessage.message.guild;
+    //See if the emoji was applied to an event
+    eventChannels.get(messageGuild.id).fetchMessage(reactMessage.message.id)
+        .catch(error=>{console.log(error); return;});
+    
+    switch(reactMessage.emoji.name){
+        case '✅':
+            var checksArray  = [];
+            reactMessage.users.every(user=>{
+                var name = messageGuild.members.find('user', user).nickname;
+                if(name != messageGuild.members.find('user', client.user).nickname){
+                    checksArray.push(name);
+                }
+            });
+            console.dir(checksArray);
+            reactMessage.message.embeds[0].fields.find(field => field.name === 'Accepted Crew:').value = checksArray;
+            
+            console.dir(reactMessage.message.embeds[0].fields.find(field => field.name === 'Accepted Crew:'));
+            
+            GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message).accepted = checksArray;
+            
+            //console.dir(GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message));
+            break;
+            
+        case '❌':
+            var checksArray  = [];
+            reactMessage.users.every(user=>{
+                var name = messageGuild.members.find('user', user).nickname;
+                if(name != messageGuild.members.find('user', client.user).nickname){
+                    checksArray.push(name);
+                }
+            });
+            
+            reactMessage.message.embeds[0].fields.find(field => field.name === 'Declined Crew:').value = checksArray;
+            
+            GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message).declined = checksArray;
+            
+            //console.dir(GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message));
+            break;
+            
+        case '❓':
+            var checksArray  = [];
+            reactMessage.users.every(user=>{
+                var name = messageGuild.members.find('user', user).nickname;
+                if(name != messageGuild.members.find('user', client.user).nickname){
+                    checksArray.push(name);
+                }
+            });
+            
+            reactMessage.message.embeds[0].fields.find(field => field.name === 'Maybe Crew:').value = checksArray;
+            
+            GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message).maybe = checksArray;
+            
+            //console.dir(GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message));
+            break;
+            
+        default:
+            console.log('Emoji Not for Event');
+            break;
+    };
+});
+
+
 // login to Discord with your app's token
 client.login(process.env.TOKEN);
+//For Local Use:
+//client.login(token.token);
