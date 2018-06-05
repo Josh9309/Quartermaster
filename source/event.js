@@ -30,10 +30,10 @@ exports.CreateEvent = function (eventCreator, client, server){
     var newEvent = event;
     newEvent.creator = eventCreator;
     newEvent.server = server;
-    newEvent.accepted= [server.members.find('user', eventCreator).nickname];
+    newEvent.accepted = [server.members.find('user', eventCreator).nickname];
     
 	eventCreator.send('Here are ye event creation instructions!');
-	eventCreator.sendMessage('What be the name of ye event?').then( message=>{
+	eventCreator.sendMessage('What be the name of ye event?').then(message=>{
         const filter = m => m.author === eventCreator;
           message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']})
             .then( collected => {
@@ -44,7 +44,7 @@ exports.CreateEvent = function (eventCreator, client, server){
             .catch(error =>  {
               console.dir(error);
               if(error.name = 'time'){
-                eventCreator.send('Time ran out restart Event creation to try again!');
+                eventCreator.send('Time ran out, restart event creation to try again!');
               }
             });
     });
@@ -52,63 +52,63 @@ exports.CreateEvent = function (eventCreator, client, server){
 };
 
 function SetEventDescription(eventCreator, newEvent){
-    eventCreator.send('Excellent Matey! Now what be ye description for the event?').then(message=>{
+    eventCreator.send('Excellent matey! Now what be ye description for the event?').then(message=>{
         const filter = m => m.author === eventCreator;
         message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']}).then(collected =>{
             newEvent.description = collected.first().content;
-            eventCreator.send(`Ye Description be : ${newEvent.description}`);
+            eventCreator.send(`Ye description be: ${newEvent.description}`);
             SetEventGame(eventCreator, newEvent);
         })
         .catch(error =>  {
               console.dir(error);
               if(error.name = 'time'){
-                eventCreator.send('Time ran out restart Event creation to try again!');
+                  eventCreator.send('Time ran out, restart event creation to try again!');
               }
         });
     });
 };
 
 function SetEventGame(eventCreator, newEvent){
-    eventCreator.send('Ay and what be ye Game for this endeavor?').then(message=>{
+    eventCreator.send('Ay, and what be ye game for this endeavor?').then(message=>{
         const filter = m => m.author === eventCreator;
         message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']}).then(collected =>{
             newEvent.game = collected.first().content;
-            eventCreator.send(`Da Game be : ${newEvent.game}`);
+            eventCreator.send(`Da game be: ${newEvent.game}`);
             SetEventDateTime(eventCreator, newEvent);
         })
         .catch(error =>  {
               console.dir(error);
               if(error.name = 'time'){
-                eventCreator.send('Time ran out restart Event creation to try again!');
+                  eventCreator.send('Time ran out, restart event creation to try again!');
               }
         });
     });
 };
 
 function SetEventDateTime(eventCreator, newEvent){
-    eventCreator.send('Now when might we be starting? (Provide Date and Time in this format.  \n month-day-year-hour-minute-AM(0)/PM(1) \n ex: 02-25-2019-05-25-1)').then(message=>{
+    eventCreator.send('Now when might we be starting? (Provide date and time in this format. \nmonth-day-year-hour-minute-AM(0)/PM(1) \n ex: 02-25-2019-05-25-1)').then(message=>{
         const filter = m => m.author === eventCreator;
         message.channel.awaitMessages(filter, {max:1, time:120000, errors: ['time']}).then(collected =>{
             newEvent.time = CreateDateTime(collected.first().content);
-            eventCreator.send(`Ay We be Seting sail: ${newEvent.time.month}/${newEvent.time.day}/${newEvent.time.year} ${newEvent.time.hour}:${newEvent.time.minute}${newEvent.time.period}`);
+            eventCreator.send(`Ay, we be setting sail: ${newEvent.time.month}/${newEvent.time.day}/${newEvent.time.year} ${newEvent.time.hour}:${newEvent.time.minute}${newEvent.time.period}`);
             PostEvent(newEvent);
         })
         .catch(error =>  {
             console.dir(error);
             if(error === 'time'){
-              eventCreator.send('Time ran out restart Event creation to try again!');
+                eventCreator.send('Time ran out, restart event creation to try again!');
             }
             if(error === 'Bad Format')
             {
-                eventCreator.send('Oy What ye thinking, You need to fix you formatting!');
+                eventCreator.send('Oy what ye thinking scrub, fix yer formatting!');
                 SetEventDateTime(eventCreator, newEvent);
             }
             if(error === 'Out Of Bounds'){
-                eventCreator.send('One of ye values is invalid, Please fix');
+                eventCreator.send('One of yer values is invalid, fix it \'er walk the plank!');
                 SetEventDateTime(eventCreator, newEvent);
             }
             if(error === 'Expired Date'){
-                eventCreator.send('We can go into the past lad, Enter a Date in the future');
+                eventCreator.send('We can\'t go into the past lad, enter a date in the future!');
                 SetEventDateTime(eventCreator, newEvent);
             }
         });
@@ -140,8 +140,6 @@ function DisplayEvent(gameEvent, channel, storeMessage){
             channel.fetchMessage(gameEvent.message.id).then(message=> message.react('✅'));
             channel.fetchMessage(gameEvent.message.id).then(message=> message.react('❓'));
             channel.fetchMessage(gameEvent.message.id).then(message=> message.react('❌'));
-            
-            
         });
     }
     else{channel.send(eventMessage);}
@@ -150,7 +148,7 @@ function DisplayEvent(gameEvent, channel, storeMessage){
 function PostEvent(newEvent){
     DisplayEvent(newEvent, newEvent.creator, false); //Show Event to creator
     
-    newEvent.creator.send('If dis message be correct, Respond with a yes').then( message=>{
+    newEvent.creator.send('If dis message be correct, respond with a yes. If not, holler a no.').then( message=>{
         const filter = m => true;
         message.channel.awaitMessages(filter, {max:1, time:120000, errors: ['time']}).then(collected =>{
             console.log(collected.first().content);
@@ -163,7 +161,7 @@ function PostEvent(newEvent){
                 DisplayEvent(newEvent, eventChannel, true);       
             }
             else if(collected.first().content === 'no'){
-                newEvent.creator.send('Oops okay, Lets try Again!');
+                newEvent.creator.send('Alrighty, lets try again!');
             }
             else{
                 throw 'Bad Format';
@@ -172,11 +170,11 @@ function PostEvent(newEvent){
         .catch(error =>  {
             console.dir(error);
             if(error === 'time'){
-              newEvent.creator.send('Time ran out restart Event creation to try again!');
+                eventCreator.send('Time ran out, restart event creation to try again!');
             }
             if(error === 'Bad Format')
             {
-                newEvent.creator.send('Oy We be needing a yes or a no answer!');
+                newEvent.creator.send('Oy, we be needing a yes or a no answer!');
                 PostEvent(newEvent);
             }
         });

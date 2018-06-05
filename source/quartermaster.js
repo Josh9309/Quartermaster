@@ -65,10 +65,10 @@ client.on('message', message => {
             message.channel.send(`These are my commands, ${message.author}`); //Send the message to the channel
 
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
+            embed.addField(`${config.prefix}event`, 'Launches event creation');
             embed.addField(`${config.prefix}help`, 'Brings up this help scroll');
             embed.addField(`${config.prefix}server`, 'Lists some information about this server');
             embed.addField(`${config.prefix}userinfo @{username}`, 'Returns some information on the requested user');
-			embed.addField(`${config.prefix}event`, 'Launches Event Creation');
 
             embed.setFooter('\nNow pipe down before I make ye walk the plank.'); //The Quartermaster's footer
             message.channel.send(embed); //Send the message to the channel
@@ -83,6 +83,18 @@ client.on('message', message => {
         ///
         ///These commands only work in a server
         ///
+        //Launch event creation
+        case `${config.prefix}event`:
+            //Ignore DMs
+            if (message.channel.type === 'dm') {
+                message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+                break;
+            }
+
+            message.channel.send('Launching event creation!');
+            var discordUser = message.author;
+            events.CreateEvent(discordUser, client, message.guild);
+            break;
         //Return server info
         case `${config.prefix}server`:
             //Ignore DMs
@@ -150,12 +162,6 @@ client.on('message', message => {
                 message.channel.send('Yar, it appears ye be tryin\' to get info on a role and not a user. Try that again and I\'ll have ye walk the plank!'); //Send the message to the channel
             }
             break;
-
-		case `${config.prefix}event`:
-			message.channel.send('Will Launch event creation code!');
-			var discordUser = message.author;
-			events.CreateEvent(discordUser, client, message.guild);
-			break;
 			
         ///
         ///Not a command
@@ -170,17 +176,18 @@ client.on('message', message => {
 
 //Handles the reactions
 client.on('messageReactionAdd', reactMessage=>{
-    var messageGuild =reactMessage.message.guild;
+    var messageGuild = reactMessage.message.guild;
+
     //See if the emoji was applied to an event
     eventChannels.get(messageGuild.id).fetchMessage(reactMessage.message.id)
         .catch(error=>{console.log(error); return;});
     
-    switch(reactMessage.emoji.name){
+    switch(reactMessage.emoji.name) {
         case '✅':
             var checksArray  = [];
-            reactMessage.users.every(user=>{
+            reactMessage.users.every(user => {
                 var name = messageGuild.members.find('user', user).nickname;
-                if(name != messageGuild.members.find('user', client.user).nickname){
+                if(name != messageGuild.members.find('user', client.user).nickname) {
                     checksArray.push(name);
                 }
             });
@@ -196,9 +203,9 @@ client.on('messageReactionAdd', reactMessage=>{
             
         case '❌':
             var checksArray  = [];
-            reactMessage.users.every(user=>{
+            reactMessage.users.every(user => {
                 var name = messageGuild.members.find('user', user).nickname;
-                if(name != messageGuild.members.find('user', client.user).nickname){
+                if(name != messageGuild.members.find('user', client.user).nickname) {
                     checksArray.push(name);
                 }
             });
@@ -212,9 +219,9 @@ client.on('messageReactionAdd', reactMessage=>{
             
         case '❓':
             var checksArray  = [];
-            reactMessage.users.every(user=>{
+            reactMessage.users.every(user => {
                 var name = messageGuild.members.find('user', user).nickname;
-                if(name != messageGuild.members.find('user', client.user).nickname){
+                if(name != messageGuild.members.find('user', client.user).nickname) {
                     checksArray.push(name);
                 }
             });
@@ -227,13 +234,13 @@ client.on('messageReactionAdd', reactMessage=>{
             break;
             
         default:
-            console.log('Emoji Not for Event');
+            console.log('Emoji not for event');
             break;
     };
 });
 
-
 // login to Discord with your app's token
 client.login(process.env.TOKEN);
+
 //For Local Use:
 //client.login(token.token);
