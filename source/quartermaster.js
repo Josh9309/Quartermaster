@@ -8,8 +8,7 @@ const config = require('./config.json');
 
 //External bot scripts
 const events = require('./event.js');
-
-//const token = require('./token.json'); //Hold the bot token
+const games = require('./games.js');
 
 // create a new Discord client
 const client = new discord.Client();
@@ -38,7 +37,6 @@ client.on('ready', () => {
 client.on('message', message => {
     //Post the message to the console
     console.log(message.content);
-    console.log(message.author);
 
     let messageArray = message.content.split(' '); //Split the incoming message on spaces
     let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
@@ -259,4 +257,5 @@ client.on('messageReactionAdd', reactMessage => {
 client.login(process.env.TOKEN);
 
 //For Local Use:
+//const token = require('./token.json'); //Hold the bot token
 //client.login(token.token);
