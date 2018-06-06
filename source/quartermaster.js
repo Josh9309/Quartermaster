@@ -1,8 +1,12 @@
 //Quartermaster
 
-// require the discord.js module
+//Discord API
 const discord = require('discord.js');
+
+//Bot prefix
 const config = require('./config.json');
+
+//External bot scripts
 const events = require('./event.js');
 
 //const token = require('./token.json'); //Hold the bot token
@@ -10,7 +14,7 @@ const events = require('./event.js');
 // create a new Discord client
 const client = new discord.Client();
 
-if(process.env.TEST_MODE == true){
+if(process.env.TEST_MODE == true) {
 	console.log("QuarterMaster Bot is in Test Mode and cannot be used");
 	return;
 }
@@ -22,7 +26,7 @@ if(process.env.TEST_MODE == true){
 client.on('ready', () => {
     console.log('Ready!');
     
-    client.guilds.every(guild=>{
+    client.guilds.every(guild => {
         console.log(guild.name);
         GameEvents.set(guild.id, []); //creates an entry in game events map for each server
         var channel = guild.channels.find('name', 'upcoming-quests');
@@ -34,6 +38,7 @@ client.on('ready', () => {
 client.on('message', message => {
     //Post the message to the console
     console.log(message.content);
+    console.log(message.author);
 
     let messageArray = message.content.split(' '); //Split the incoming message on spaces
     let command = messageArray[0].toLowerCase(); //Get the command from the message, make it lowercase
@@ -66,6 +71,7 @@ client.on('message', message => {
 
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
             embed.addField(`${config.prefix}event`, 'Launches event creation');
+            embed.addField(`${config.prefix}games`, 'Database containing games a user has');
             embed.addField(`${config.prefix}help`, 'Brings up this help scroll');
             embed.addField(`${config.prefix}server`, 'Lists some information about this server');
             embed.addField(`${config.prefix}userinfo @{username}`, 'Returns some information on the requested user');
@@ -94,6 +100,16 @@ client.on('message', message => {
             message.channel.send('Launching event creation!');
             var discordUser = message.author;
             events.CreateEvent(discordUser, client, message.guild);
+            break;
+        //Launch game library
+        case `${config.prefix}games`:
+            //Ignore DMs
+            if (message.channel.type === 'dm') {
+                message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+                break;
+            }
+
+            message.channel.send('Pls no');
             break;
         //Return server info
         case `${config.prefix}server`:
@@ -175,12 +191,12 @@ client.on('message', message => {
 });
 
 //Handles the reactions
-client.on('messageReactionAdd', reactMessage=>{
+client.on('messageReactionAdd', reactMessage => {
     var messageGuild = reactMessage.message.guild;
 
     //See if the emoji was applied to an event
     eventChannels.get(messageGuild.id).fetchMessage(reactMessage.message.id)
-        .catch(error=>{console.log(error); return;});
+        .catch(error => { console.log(error); return; });
     
     switch(reactMessage.emoji.name) {
         case '✅':
