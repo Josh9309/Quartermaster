@@ -240,4 +240,26 @@ function CreateDateTime(dateTimeStr) {
     };
     
     return dt;
-}
+};
+
+exports.GenerateEventEmbed = function(gameEvent){
+    console.dir('EVENT BEGINS!!');
+    console.dir(gameEvent);
+    let eventEmbed = new Discord.RichEmbed();
+    
+    eventEmbed.setTitle("Wanted Event!");
+    eventEmbed.setColor('#F1C428');
+    eventEmbed.setAuthor(gameEvent.creator.username, gameEvent.creator.avatarURL);
+    
+    //Event Title
+    eventEmbed.addField('Title', gameEvent.title);
+    eventEmbed.addField('Description', gameEvent.description);
+    eventEmbed.addField('Game', gameEvent.game);
+    eventEmbed.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${gameEvent.time.hour}:${gameEvent.time.minute}${gameEvent.time.period}`);
+    
+    eventEmbed.addField("Accepted Crew:", gameEvent.accepted, true);
+    eventEmbed.addField("Maybe Crew:", gameEvent.maybe, true);
+    eventEmbed.addField("Declined Crew:", gameEvent.declined, true);
+    
+    return eventEmbed;
+};

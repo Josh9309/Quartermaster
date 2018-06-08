@@ -176,7 +176,16 @@ client.on('message', message => {
                 message.channel.send('Yar, it appears ye be tryin\' to get info on a role and not a user. Try that again and I\'ll have ye walk the plank!'); //Send the message to the channel
             }
             break;
-			
+            
+        case `${config.prefix}embed`:
+            let testEmbed = new discord.RichEmbed();
+            testEmbed.addField('Name', 'testName');
+            message.channel.send(testEmbed).then(newMessage =>{
+                let newEmbed = new discord.RichEmbed(eventTest);
+                
+                newMessage.edit(newEmbed).then(m => console.log('changed'));
+            });
+            break;
         ///
         ///Not a command
         ///
@@ -199,52 +208,208 @@ client.on('messageReactionAdd', reactMessage => {
     switch(reactMessage.emoji.name) {
         case '✅':
             var checksArray  = [];
-            reactMessage.users.every(user => {
-                var name = messageGuild.members.find('user', user).nickname;
-                if(name != messageGuild.members.find('user', client.user).nickname) {
-                    checksArray.push(name);
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                console.log(guildUser.nickname);
+
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    console.log('push');
                 }
-            });
+            };
+            
+            if(checksArray.length == 0){
+                console.log('empty');
+                checksArray.push('---------');
+            }
             console.dir(checksArray);
-            reactMessage.message.embeds[0].fields.find(field => field.name === 'Accepted Crew:').value = checksArray;
             
-            console.dir(reactMessage.message.embeds[0].fields.find(field => field.name === 'Accepted Crew:'));
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
             
-            GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message).accepted = checksArray;
             
-            //console.dir(GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message));
+            reactEvent.accepted = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
             break;
             
         case '❌':
-            var checksArray  = [];
-            reactMessage.users.every(user => {
-                var name = messageGuild.members.find('user', user).nickname;
-                if(name != messageGuild.members.find('user', client.user).nickname) {
-                    checksArray.push(name);
+             var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
                 }
-            });
+            };
             
-            reactMessage.message.embeds[0].fields.find(field => field.name === 'Declined Crew:').value = checksArray;
+            if(checksArray.length == 0){
+                //console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
             
-            GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message).declined = checksArray;
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
             
-            //console.dir(GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message));
+            
+            reactEvent.declined = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(reactEvent);
+            
+            reactMessage.message.edit(newEventEmbed);
             break;
             
         case '❓':
             var checksArray  = [];
-            reactMessage.users.every(user => {
-                var name = messageGuild.members.find('user', user).nickname;
-                if(name != messageGuild.members.find('user', client.user).nickname) {
-                    checksArray.push(name);
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
                 }
-            });
+            };
             
-            reactMessage.message.embeds[0].fields.find(field => field.name === 'Maybe Crew:').value = checksArray;
+            if(checksArray.length == 0){
+              //  console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
             
-            GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message).maybe = checksArray;
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
             
-            //console.dir(GameEvents.get(messageGuild.id).find(event => event.message === reactMessage.message));
+            
+            reactEvent.maybe = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        default:
+            console.log('Emoji not for event');
+            break;
+    };
+});
+
+client.on('messageReactionRemove', reactMessage => {
+    var messageGuild = reactMessage.message.guild;
+
+    //See if the emoji was applied to an event
+    eventChannels.get(messageGuild.id).fetchMessage(reactMessage.message.id)
+        .catch(error => { console.log(error); return; });
+    
+    switch(reactMessage.emoji.name) {
+        case '✅':
+            var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+                console.log('empty');
+                checksArray.push('---------');
+            }
+            console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.accepted = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        case '❌':
+             var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+                //console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.declined = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(reactEvent);
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        case '❓':
+            var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+              //  console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.maybe = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
             break;
             
         default:
@@ -254,8 +419,8 @@ client.on('messageReactionAdd', reactMessage => {
 });
 
 // login to Discord with your app's token
-client.login(process.env.TOKEN);
+//client.login(process.env.TOKEN);
 
 //For Local Use:
-//const token = require('./token.json'); //Hold the bot token
-//client.login(token.token);
+const token = require('./token.json'); //Hold the bot token
+client.login(token.token);
