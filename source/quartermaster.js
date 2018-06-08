@@ -419,8 +419,8 @@ client.on('messageReactionRemove', reactMessage => {
 });
 
 // login to Discord with your app's token
-//client.login(process.env.TOKEN);
+client.login(process.env.TOKEN);
 
 //For Local Use:
-const token = require('./token.json'); //Hold the bot token
-client.login(token.token);
+//const token = require('./token.json'); //Hold the bot token
+//client.login(token.token);
