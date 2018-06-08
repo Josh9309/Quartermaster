@@ -13,7 +13,6 @@ Quartermaster is a discord bot used to create game events for server members and
 *tweetnacl
 *ws
 
-
 ## How to Build
 To run and build Quartermaster simply install node.js and install discord.js using `npm install discord.js`.
 
@@ -21,6 +20,7 @@ To run and build Quartermaster simply install node.js and install discord.js usi
 ## Current Commands
 | Command | Description |
 |---------|-------------|
+|'!event | Launches game event creation |
 |`!help`| Provides a list of commands the bot responds to |
 |`!ping`  | Quartermaster will respond with Pong |
 |`!server`| Will provide the server name and number of members |

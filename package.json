@@ -4,7 +4,9 @@
   "description": "Quartermaster is a Discord bot that is designed to provide easy game event creation for server members. Quartermaster will allow members to easily created and join game event plans and will also provide basic mod/ quailty of life info/tasks.",
   "main": "source/quartermaster.js",
   "scripts": {
-	"start" : "node source/quartermaster.js",
+    "start": "node source/quartermaster.js",
+    "nodemon": "nodemon --watch ./source",
+    "pretest": "eslint ./source --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,5 +25,8 @@
   "homepage": "https://github.com/Josh9309/Quartermaster#readme",
   "dependencies": {
     "discord.js": "^11.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.5"
   }
 }

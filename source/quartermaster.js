@@ -1,17 +1,22 @@
 //Quartermaster
 
-// require the discord.js module
+//Discord API
 const discord = require('discord.js');
+
+//Bot prefix
 const config = require('./config.json');
-//const token = require('./token.json'); //Hold the bot token
+
+//External bot scripts
+const events = require('./event.js');
+const games = require('./games.js');
 
 // create a new Discord client
 const client = new discord.Client();
 
-if(process.env.TEST_MODE == true){ 
-  console.log("QuarterMaster Bot is in Test Mode and cannot be used"); 
-  return; 
-} 
+if(process.env.TEST_MODE == true) {
+	console.log("QuarterMaster Bot is in Test Mode and cannot be used");
+	return;
+}
 
 // when the client is ready, run this code
 // this event will trigger whenever your bot:
@@ -19,6 +24,14 @@ if(process.env.TEST_MODE == true){
 // - reconnects after disconnecting
 client.on('ready', () => {
     console.log('Ready!');
+    
+    client.guilds.every(guild => {
+        console.log(guild.name);
+        GameEvents.set(guild.id, []); //creates an entry in game events map for each server
+        var channel = guild.channels.find('name', 'upcoming-quests');
+        console.log(channel.name);
+        eventChannels.set(guild.id, channel);
+    });
 });
 
 client.on('message', message => {
@@ -45,6 +58,7 @@ client.on('message', message => {
     //Make sure to separate commands that don't work in DMs
     let embed = new discord.RichEmbed(); //Embeded responses, a common example of these are links
     embed.setColor('#F1C428'); //Set the Quartermaster's embed color
+	
     switch (command) {
         ///
         ///These commands work in both servers and DMs
@@ -54,6 +68,8 @@ client.on('message', message => {
             message.channel.send(`These are my commands, ${message.author}`); //Send the message to the channel
 
             embed.setAuthor('The Quartermaster\'s Commands', client.user.avatarURL); //Sets the command title and returns the Quartermaster's avatar
+            embed.addField(`${config.prefix}event`, 'Launches event creation');
+            embed.addField(`${config.prefix}games`, 'Database containing games a user has');
             embed.addField(`${config.prefix}help`, 'Brings up this help scroll');
             embed.addField(`${config.prefix}server`, 'Lists some information about this server');
             embed.addField(`${config.prefix}userinfo @{username}`, 'Returns some information on the requested user');
@@ -71,6 +87,28 @@ client.on('message', message => {
         ///
         ///These commands only work in a server
         ///
+        //Launch event creation
+        case `${config.prefix}event`:
+            //Ignore DMs
+            if (message.channel.type === 'dm') {
+                message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+                break;
+            }
+
+            message.channel.send('Launching event creation!');
+            var discordUser = message.author;
+            events.CreateEvent(discordUser, client, message.guild);
+            break;
+        //Launch game library
+        case `${config.prefix}games`:
+            //Ignore DMs
+            if (message.channel.type === 'dm') {
+                message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+                break;
+            }
+
+            message.channel.send('Pls no');
+            break;
         //Return server info
         case `${config.prefix}server`:
             //Ignore DMs
@@ -138,7 +176,16 @@ client.on('message', message => {
                 message.channel.send('Yar, it appears ye be tryin\' to get info on a role and not a user. Try that again and I\'ll have ye walk the plank!'); //Send the message to the channel
             }
             break;
-
+            
+        case `${config.prefix}embed`:
+            let testEmbed = new discord.RichEmbed();
+            testEmbed.addField('Name', 'testName');
+            message.channel.send(testEmbed).then(newMessage =>{
+                let newEmbed = new discord.RichEmbed(eventTest);
+                
+                newMessage.edit(newEmbed).then(m => console.log('changed'));
+            });
+            break;
         ///
         ///Not a command
         ///
@@ -150,5 +197,230 @@ client.on('message', message => {
     return; //Exit the message handler
 });
 
+//Handles the reactions
+client.on('messageReactionAdd', reactMessage => {
+    var messageGuild = reactMessage.message.guild;
+
+    //See if the emoji was applied to an event
+    eventChannels.get(messageGuild.id).fetchMessage(reactMessage.message.id)
+        .catch(error => { console.log(error); return; });
+    
+    switch(reactMessage.emoji.name) {
+        case '✅':
+            var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                console.log(guildUser.nickname);
+
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+                console.log('empty');
+                checksArray.push('---------');
+            }
+            console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.accepted = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        case '❌':
+             var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+                //console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.declined = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(reactEvent);
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        case '❓':
+            var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+              //  console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.maybe = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        default:
+            console.log('Emoji not for event');
+            break;
+    };
+});
+
+client.on('messageReactionRemove', reactMessage => {
+    var messageGuild = reactMessage.message.guild;
+
+    //See if the emoji was applied to an event
+    eventChannels.get(messageGuild.id).fetchMessage(reactMessage.message.id)
+        .catch(error => { console.log(error); return; });
+    
+    switch(reactMessage.emoji.name) {
+        case '✅':
+            var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+                console.log('empty');
+                checksArray.push('---------');
+            }
+            console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.accepted = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        case '❌':
+             var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+                //console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.declined = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(reactEvent);
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        case '❓':
+            var checksArray  = [];
+           // console.dir(reactMessage.users);
+            for(var i =0; i < reactMessage.users.array().length; i++){
+                var user = reactMessage.users.array()[i];
+                //console.log(`User ${i}: ${user.username}`);
+                
+                var guildUser = messageGuild.member(user);
+                //console.log(guildUser.nickname);
+                
+                if(guildUser.displayName != messageGuild.member(client.user).displayName) {
+                    checksArray.push(guildUser.displayName);
+                    //console.log('push');
+                }
+            };
+            
+            if(checksArray.length == 0){
+              //  console.log('empty');
+                checksArray.push('---------');
+            }
+            //console.dir(checksArray);
+            
+            var reactEvent = GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id);
+            
+            
+            reactEvent.maybe = checksArray;
+            
+            var newEventEmbed = events.GenerateEventEmbed(GameEvents.get(messageGuild.id).find(event => event.message.id === reactMessage.message.id));
+            
+            reactMessage.message.edit(newEventEmbed);
+            break;
+            
+        default:
+            console.log('Emoji not for event');
+            break;
+    };
+});
+
 // login to Discord with your app's token
-client.login(process.env.TOKEN);
+//client.login(process.env.TOKEN);
+
+//For Local Use:
+const token = require('./token.json'); //Hold the bot token
+client.login(token.token);
