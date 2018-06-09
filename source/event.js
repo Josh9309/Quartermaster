@@ -4,12 +4,12 @@ const Discord = require('discord.js');
 eventChannels = new Map(); //Map holds corresonding event channels based on server id [serverID, Channel];
 
 var DateTime = Object.seal({
-	month: 00,
-	day: 00,
-	year:0000,
-	hour: 00,
-	minute: 00,
-    period: "AM"
+	month: 06,
+	day: 09,
+	year:2018,
+	hour: 01,
+	minute: 45,
+    period: "PM"
 });
 
 var event = Object.seal({
@@ -28,7 +28,7 @@ var event = Object.seal({
 GameEvents = new Map(); //Map holds the events that are active in a server [ServerId, EventArray];
 
 exports.CreateEvent = function (eventCreator, client, server) {
-    var newEvent = event;
+    var newEvent = Object.create(event);
     newEvent.creator = eventCreator;
     newEvent.server = server;
     newEvent.accepted = [server.members.find('user', eventCreator).nickname];
@@ -50,6 +50,156 @@ exports.CreateEvent = function (eventCreator, client, server) {
             });
     });
     
+};
+
+//Imports event from and event embed message
+exports.ImportEvent = async function(eventEmbed, server, client){
+    console.log("Event Importing!");
+    
+    var gameEvent =  Object.create(event); //Create a new event object
+    
+    //Import Title
+    gameEvent.title = eventEmbed.fields[0].value;
+    gameEvent.description = eventEmbed.fields[1].value; //Import Description
+    gameEvent.game = eventEmbed.fields[2].value;
+    
+    //Import and Parse Date and Time
+    //ex: 6/9/2018 2:0PM
+    var gameDT = Object.create(DateTime);
+    var dtString = eventEmbed.fields[3].value;
+    var dtArray = dtString.split(''); //convert the date time string to an array
+    
+    var startPos = 0;
+    var endPos =0;
+    while(dtArray[endPos] != '/'){
+        endPos++;
+        //console.log(dtArray[endPos]);
+    }
+    gameDT.month = parseInt(dtString.substring(startPos, endPos));
+    console.dir(dtArray);
+    startPos = startPos+2;
+    endPos = endPos+1; //move the start pos to skip over the '/'
+    while(dtArray[endPos] != '/'){endPos++;}
+    var temp = dtString.substring(startPos, endPos);
+    gameDT.day = parseInt(dtString.substring(startPos, endPos));
+
+    startPos = startPos+2;
+    endPos = endPos+1; //move the start pos to skip over the '/'
+    while(dtArray[endPos] != ' '){endPos++;}
+    temp = dtString.substring(startPos, endPos);
+    gameDT.year = parseInt(dtString.substring(startPos, endPos));
+    
+    startPos = endPos;
+    endPos = endPos+1;  //move the start pos to skip over the ' '
+    while(dtArray[endPos] != ':'){endPos++;}
+    //console.log(`startPos:${startPos} , endPos:${endPos}`);
+    temp = dtString.substring(startPos, endPos);
+    gameDT.hour = parseInt(dtString.substring(startPos, endPos));
+    
+    startPos = endPos+1;
+    endPos = endPos+1;  //move the start pos to skip over the ':'
+    //console.log(`startPos:${startPos} , endPos:${endPos}`);
+    while(dtArray[endPos] != 'A' && dtArray[endPos] != 'P'){endPos++;}
+    //console.log(`startPos:${startPos} , endPos:${endPos}`);
+    temp = dtString.substring(startPos, endPos);
+    //console.log(`temp string ${temp}`);
+    gameDT.minute = parseInt(dtString.substring(startPos, endPos));
+    
+    startPos = endPos;
+    endPos = endPos+2; 
+    gameDT.period = dtString.substring(startPos, endPos);
+    
+    gameEvent.time = gameDT;
+    
+    //Import accepted, Maybe, and Declined crew based on current reactions
+    //var reactors = ['----------'];
+    //gameEvent.accepted = reactors;
+    //gameEvent.declined = reactors;
+    //gameEvent.maybe = reactors;
+    var reactorsAccepted = []; //holds array of user display names who reacted with the accepted emoji 
+    console.log('Reactions:');
+    var eventReactions = eventEmbed.message.reactions;
+    var acceptedReacts = eventReactions.find(reaction => reaction.emoji.name === '✅');
+
+    if(acceptedReacts === undefined )
+    {
+        console.log('A React!!!!!!!!!!!!!!!!!!!!!!1');
+        eventEmbed.message.react('✅');
+    }
+    var reactUsers = await acceptedReacts.fetchUsers();
+    reactUsers = reactUsers.array();
+    console.dir(reactUsers);
+    for(var i =0; i < reactUsers.length; i++){
+        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName ){
+            reactorsAccepted.push(server.member(reactUsers[i]).displayName);
+        }
+    }
+    
+    if(reactorsAccepted.length == 0){
+        reactorsAccepted.push('--------');
+    }
+    gameEvent.accepted = reactorsAccepted;
+    
+    //MAYBE Crew Import
+    var reactorsMaybe = []; //holds array of user display names who reacted with the Maybe emoji
+    var maybeReacts = eventReactions.find(reaction => reaction.emoji.name === '❓');
+    if(maybeReacts === undefined )
+    {
+        eventEmbed.message.react('❓');
+    }
+    reactUsers = await maybeReacts.fetchUsers();
+    reactUsers = reactUsers.array();
+    for(var i =0; i < reactUsers.length; i++){
+        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName ){
+            reactorsMaybe.push(server.member(reactUsers[i]).displayName);
+        }
+    }
+    
+    if(reactorsMaybe.length == 0){
+        reactorsMaybe.push('--------');
+    }
+    gameEvent.maybe = reactorsMaybe;
+    
+    //Import Declined Crew
+    var reactorsDeclined = []; //holds array of user display names who reacted with the Decline emoji
+    var declineReacts = eventReactions.find(reaction => reaction.emoji.name === '❌');
+    if(declineReacts === undefined )
+    {
+        eventEmbed.message.react('❌');
+    }
+    reactUsers = await declineReacts.fetchUsers();
+    reactUsers = reactUsers.array();
+    for(var i =0; i < reactUsers.length; i++){
+        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName ){
+            reactorsDeclined.push(server.member(reactUsers[i]).displayName);
+        }
+    }
+    
+    if(reactorsDeclined.length == 0){
+        reactorsDeclined.push('--------');
+    }
+    gameEvent.declined = reactorsDeclined;
+    
+    //Import creator
+    var members = server.members.array();
+    for(var i = 0; i < members.length; i++){
+        if(members[i].user.username == eventEmbed.author.name)
+        {
+            gameEvent.creator = members[i].user;
+        }
+    }
+    
+    
+    //Import Server & Message
+    gameEvent.server = server;
+    gameEvent.message = eventEmbed.message;
+    GameEvents.get(gameEvent.server.id).push(gameEvent);
+    // console.log('after Push');
+    //console.dir(GameEvents.get(gameEvent.server.id));
+    console.log('event import finish');
+    
+    //var eventEmbed = GenerateEventEmbed(allEvents[i]);
+    //server.owner.send(eventEmbed);
 };
 
 function SetEventDescription(eventCreator, newEvent) {
@@ -244,7 +394,7 @@ function CreateDateTime(dateTimeStr) {
 
 exports.GenerateEventEmbed = function(gameEvent){
     console.dir('EVENT BEGINS!!');
-    console.dir(gameEvent);
+    //console.dir(gameEvent);
     let eventEmbed = new Discord.RichEmbed();
     
     eventEmbed.setTitle("Wanted Event!");
@@ -255,7 +405,15 @@ exports.GenerateEventEmbed = function(gameEvent){
     eventEmbed.addField('Title', gameEvent.title);
     eventEmbed.addField('Description', gameEvent.description);
     eventEmbed.addField('Game', gameEvent.game);
-    eventEmbed.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${gameEvent.time.hour}:${gameEvent.time.minute}${gameEvent.time.period}`);
+    var hourStr;
+    if(gameEvent.time.hour < 10){
+        hourStr = `0${gameEvent.time.hour}`;
+    }else{hourStr = gameEvent.time.hour;}
+    var minuteStr;
+    if(gameEvent.time.minute < 10){
+        minuteStr = `0${gameEvent.time.minute}`;
+    }else{minuteStr = gameEvent.time.minute}
+    eventEmbed.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${hourStr}:${minuteStr}${gameEvent.time.period}`);
     
     eventEmbed.addField("Accepted Crew:", gameEvent.accepted, true);
     eventEmbed.addField("Maybe Crew:", gameEvent.maybe, true);

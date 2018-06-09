@@ -13,6 +13,7 @@ const games = require('./games.js');
 // create a new Discord client
 const client = new discord.Client();
 
+
 if(process.env.TEST_MODE == true) {
 	console.log("QuarterMaster Bot is in Test Mode and cannot be used");
 	return;
@@ -25,13 +26,33 @@ if(process.env.TEST_MODE == true) {
 client.on('ready', () => {
     console.log('Ready!');
     
+    //Find event channel for server
     client.guilds.every(guild => {
         console.log(guild.name);
         GameEvents.set(guild.id, []); //creates an entry in game events map for each server
         var channel = guild.channels.find('name', 'upcoming-quests');
         console.log(channel.name);
         eventChannels.set(guild.id, channel);
+        
+        channel.fetchMessages().then(messages =>{
+            
+            var mArray = messages.array();
+            
+            for(var i = 0; i < mArray.length; i++){
+                /*console.log('Print Messages!!!!!');
+                console.dir(mArray[i].embeds[0]);
+                console.log('message ++');*/
+                if(mArray[i].author.id != client.user.id) //If this message is not from Quartermaster and is not a event then skip this message
+                {}
+                else{
+                    var eventEmbed = mArray[i].embeds[0];
+                    events.ImportEvent(eventEmbed, guild, client); //Import the game event into the gameEvent array
+                }
+            }
+        });
     });
+    
+    
 });
 
 client.on('message', message => {
