@@ -439,6 +439,22 @@ client.on('messageReactionRemove', reactMessage => {
     };
 });
 
+//Handles How Quartermaster greets new members to server
+client.on('guildMemberAdd', newMember =>{
+    console.log('New Member ' + newMember.displayName +' has joined!');
+    
+	//Find Main Text channel for server
+    client.guilds.every(guild => {
+        console.log(guild.name);
+		if(guild.name === 'Knights Of The Blackfeather'){
+    	    var channel = guild.channels.find('name', 'the-deck');
+    	    console.log(channel.name);
+    	    
+    	    channel.send(`Ahoy ye Scallywag! Welcome to the crew of the BlackFeather ${newMember.displayName}! Make sure to check out the pinned server info in #notice-board for the rules of the crew! If ye be needing any help simply say '!help'.`);
+		}
+    });
+});
+
 // login to Discord with your app's token
 client.login(process.env.TOKEN);
 
