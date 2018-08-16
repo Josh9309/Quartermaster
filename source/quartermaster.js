@@ -459,5 +459,5 @@ client.on('guildMemberAdd', newMember =>{
 client.login(process.env.TOKEN);
 
 //For Local Use:
-//const token = require('./token.json'); //Hold the bot token
-//client.login(token.token);
+// token = require('./token.json'); //Hold the bot token
+//.login(token.token);

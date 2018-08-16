@@ -3,13 +3,32 @@ const Discord = require('discord.js');
 
 eventChannels = new Map(); //Map holds corresonding event channels based on server id [serverID, Channel];
 
+/*
+Time Zone Codes:
+0 = Eastern Standard Time (EST)
+1 = Central Standard Time (CST)
+2 = Mountain Standard Time (MST)
+3 = Pacific Standard Time (PST)
+4 = Alaska Standard Time (AKST)
+5 = Hawaii - Aleutian Standard Time (HST)
+*/
+var timeZoneCodes = [
+	'Eastern Standard Time (EST)',
+	'Central Standard Time (CST)',
+	'Mountain Standard Time (MST)',
+	'Pacific Standard Time (PST)',
+	'Alaska Standard Time (AKST)',
+	'Hawaii - Aleutian Standard Time (HST)'
+];
+
 var DateTime = Object.seal({
 	month: 06,
 	day: 09,
 	year:2018,
 	hour: 01,
 	minute: 45,
-    period: "PM"
+    period: "PM",
+	timeZone: 0   
 });
 
 var event = Object.seal({
@@ -61,12 +80,12 @@ exports.ImportEvent = async function(eventEmbed, server, client){
     //Import Title
     gameEvent.title = eventEmbed.fields[0].value;
     gameEvent.description = eventEmbed.fields[1].value; //Import Description
-    gameEvent.game = eventEmbed.fields[2].value;
+    gameEvent.game = eventEmbed.fields[2].value; //game description
     
     //Import and Parse Date and Time
     //ex: 6/9/2018 2:0PM
     var gameDT = Object.create(DateTime);
-    var dtString = eventEmbed.fields[3].value;
+    var dtString = eventEmbed.fields[3].value; //date & time string
     var dtArray = dtString.split(''); //convert the date time string to an array
     
     var startPos = 0;
@@ -108,7 +127,31 @@ exports.ImportEvent = async function(eventEmbed, server, client){
     startPos = endPos;
     endPos = endPos+2; 
     gameDT.period = dtString.substring(startPos, endPos);
-    
+	
+	var timeZoneCode = 0;
+	switch(eventEmbed.fields[4].value)
+	{
+		case 'Eastern Standard Time (EST)':
+			timeZoneCode = 0;
+			break;
+		case 'Central Standard Time (CST)':
+			timeZoneCode = 1;
+			break;
+		case 'Mountain Standard Time (MST)':
+			timeZoneCode = 2;
+			break;
+		case 'Pacific Standard Time (PST)':
+			timeZoneCode = 3;
+			break;
+		case 'Alaska Standard Time (AKST)':
+			timeZoneCode = 4;
+			break;
+		case 'Hawaii - Aleutian Standard Time (HST)':
+			timeZoneCode = 5;
+			break;
+	}
+	
+	gameDT.timeZone = timeZoneCode;
     gameEvent.time = gameDT;
     
     //Import accepted, Maybe, and Declined crew based on current reactions
@@ -242,7 +285,7 @@ function SetEventDateTime(eventCreator, newEvent) {
         message.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] }).then(collected => {
             newEvent.time = CreateDateTime(collected.first().content);
             eventCreator.send(`Ay, we be setting sail: ${newEvent.time.month}/${newEvent.time.day}/${newEvent.time.year} ${newEvent.time.hour}:${newEvent.time.minute}${newEvent.time.period}`);
-            PostEvent(newEvent);
+            SetTimeZone(eventCreator, newEvent);
         })
         .catch(error => {
             console.dir(error);
@@ -251,18 +294,52 @@ function SetEventDateTime(eventCreator, newEvent) {
             }
             if(error === 'Bad Format') {
                 eventCreator.send('Oy what ye thinking scrub, fix yer formatting!');
-                SetEventDateTime(eventCreator, newEvent);
             }
             if(error === 'Out Of Bounds') {
                 eventCreator.send('One of yer values is invalid, fix it \'er walk the plank!');
-                SetEventDateTime(eventCreator, newEvent);
             }
             if(error === 'Expired Date') {
                 eventCreator.send('We can\'t go into the past lad, enter a date in the future!');
-                SetEventDateTime(eventCreator, newEvent);
             }
+			SetTimeZone(eventCreator, newEvent);
         });
     });
+};
+
+function SetTimeZone(eventCreator, newEvent){
+	eventCreator.send(`What time zone would this here event be happening in? (Responded with time zone code using chart below: ex: '0' for est) \n
+	Time Zone Codes:
+	\n 0 = Eastern Standard Time (EST)
+	\n 1 = Central Standard Time (CST)
+	\n 2 = Mountain Standard Time (MST)
+	\n 3 = Pacific Standard Time (PST)
+	\n 4 = Alaska Standard Time (AKST)
+	\n 5 = Hawaii - Aleutian Standard Time (HST)`).then(message => {
+        const filter = m => m.author === eventCreator;
+        message.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] }).then(collected => {
+			let timeCode = parseInt(collected.first().content);
+			
+			if(timeCode > 5 || timeCode <0){
+				throw "Invalid Input";
+			}
+			
+			newEvent.time.timeZone = timeCode;
+			
+			let timeZoneString = timeZoneCodes[timeCode];
+			
+			eventCreator.send(`Ay the time zone be for the event will be ${timeZoneString} `);
+			PostEvent(newEvent);
+		}).catch(error => {
+            console.dir(error);
+            if(error === 'time') {
+                eventCreator.send('Time ran out, restart event creation to try again!');
+            }
+			else if(error === 'Invalid Input'){
+				eventCreator.send('Time zone code is not between 0-5. Please enter a valid time zone code.');
+			}
+			SetTimeZone(eventCreator, newEvent);
+		});
+	});
 };
 
 function DisplayEvent(gameEvent, channel, storeMessage) {
@@ -277,7 +354,8 @@ function DisplayEvent(gameEvent, channel, storeMessage) {
     eventMessage.addField('Description', gameEvent.description);
     eventMessage.addField('Game', gameEvent.game);
     eventMessage.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${gameEvent.time.hour}:${gameEvent.time.minute}${gameEvent.time.period}`);
-    
+    eventMessage.addField("Time Zone:" , timeZoneCodes[gameEvent.time.timeZone]);
+	
     eventMessage.addField("Accepted Crew:", gameEvent.accepted, true);
     eventMessage.addField("Maybe Crew:", gameEvent.maybe, true);
     eventMessage.addField("Declined Crew:", gameEvent.declined, true);
@@ -304,6 +382,7 @@ function PostEvent(newEvent) {
     newEvent.creator.send('If dis message be correct, respond with a yes. If not, holler a no.').then(message => {
         const filter = m => true;
         message.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] }).then(collected => {
+			console.log('collected!');
             console.log(collected.first().content);
             if(collected.first().content === 'yes') {
                 newEvent.creator.send('Gotcha, I be letting the crew know then!');
@@ -414,6 +493,7 @@ exports.GenerateEventEmbed = function(gameEvent){
         minuteStr = `0${gameEvent.time.minute}`;
     }else{minuteStr = gameEvent.time.minute}
     eventEmbed.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${hourStr}:${minuteStr}${gameEvent.time.period}`);
+	eventEmbed.addField("Time Zone", timeZoneCodes[gameEvent.time.timeZone]);
     
     eventEmbed.addField("Accepted Crew:", gameEvent.accepted, true);
     eventEmbed.addField("Maybe Crew:", gameEvent.maybe, true);
