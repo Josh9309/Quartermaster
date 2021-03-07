@@ -1,7 +1,10 @@
+//GLOBALS
+/*global gGameEvents*/
+/*global gServerEventChannels*/
+require('./quartermaster_globals.js');
+
 //Discord API
 const Discord = require('discord.js');
-
-eventChannels = new Map(); //Map holds corresonding event channels based on server id [serverID, Channel];
 
 /*
 Time Zone Codes:
@@ -12,70 +15,79 @@ Time Zone Codes:
 4 = Alaska Standard Time (AKST)
 5 = Hawaii - Aleutian Standard Time (HST)
 */
-var timeZoneCodes = [
-	'Eastern Standard Time (EST)',
-	'Central Standard Time (CST)',
-	'Mountain Standard Time (MST)',
-	'Pacific Standard Time (PST)',
-	'Alaska Standard Time (AKST)',
-	'Hawaii - Aleutian Standard Time (HST)'
+const timeZoneCodes = 
+[
+    'Eastern Standard Time (EST)',
+    'Central Standard Time (CST)',
+    'Mountain Standard Time (MST)',
+    'Pacific Standard Time (PST)',
+    'Alaska Standard Time (AKST)',
+    'Hawaii - Aleutian Standard Time (HST)',
 ];
 
-var DateTime = Object.seal({
-	month: 06,
-	day: 09,
-	year:2018,
-	hour: 01,
-	minute: 45,
+const DateTime = Object.seal({
+    month: 6,
+    day: 9,
+    year:2018,
+    hour: 1,
+    minute: 45,
     period: "PM",
-	timeZone: 0   
+    timeZone: 0,   
 });
 
-var event = Object.seal({
-	title: "placeholder",
-	description: "Description goes here",
+const event = Object.seal({
+    title: "placeholder",
+    description: "Description goes here",
     game: "GAME!!!!",
-	time: DateTime,
-	accepted: ["--------"],
-	maybe: ["---------"],
-	declined:["-------"],
+    time: DateTime,
+    accepted: ["--------"],
+    maybe: ["---------"],
+    declined:["-------"],
     creator:{},
     server:{}, //Holds a Guild Object representing the server
-    message: {} //holds event mesaage sent to eventChannel
+    message: {}, //holds event mesaage sent to eventChannel
 });
 
-GameEvents = new Map(); //Map holds the events that are active in a server [ServerId, EventArray];
 
-exports.CreateEvent = function (eventCreator, client, server) {
-    var newEvent = Object.create(event);
+exports.CreateEvent = function(eventCreator, client, server) 
+{
+    const newEvent = Object.create(event);
     newEvent.creator = eventCreator;
     newEvent.server = server;
     newEvent.accepted = [server.members.find('user', eventCreator).nickname];
     
-	eventCreator.send('Here are ye event creation instructions!');
-    eventCreator.sendMessage('What be the name of ye event?').then(message => {
-        const filter = m => m.author === eventCreator;
-          message.channel.awaitMessages(filter, {max:1, time:60000, errors: ['time']})
-            .then(collected => {
-                newEvent.title = collected.first().content;
+    eventCreator.send('Here are ye event creation instructions!');
+    eventCreator.sendMessage('What be the name of ye event?')
+        .then(message => 
+        {
+            const filter = m => m.author === eventCreator;
+            const messageCollector = message.channel.createMessageCollector(filter, { time: 60000, errors: ['time'] });
+        
+            messageCollector.on('collect', messageCollected => 
+            {
+                newEvent.title = messageCollected.content;
                 eventCreator.sendMessage(`Ye title be: ${newEvent.title}`);
                 SetEventDescription(eventCreator, newEvent);
-            })
-            .catch(error => {
-              console.dir(error);
-              if(error.name = 'time') {
-                eventCreator.send('Time ran out, restart event creation to try again!');
-              }
+                messageCollector.stop("Success");
             });
-    });
+            
+            messageCollector.on('end', (collected, reason) =>
+            {
+                if(reason != "Success")
+                {
+                    newEvent.creator.send('Time ran out, restart event creation to try again!');
+                }
+            });
+        });
     
 };
 
 //Imports event from and event embed message
-exports.ImportEvent = async function(eventEmbed, server, client){
+exports.ImportEvent = async function(eventEmbed, server, client)
+{
     console.log("Event Importing!");
     
-    var gameEvent =  Object.create(event); //Create a new event object
+    const gameEvent = Object.create(event); //Create a new event object
     
     //Import Title
     gameEvent.title = eventEmbed.fields[0].value;
@@ -84,74 +96,75 @@ exports.ImportEvent = async function(eventEmbed, server, client){
     
     //Import and Parse Date and Time
     //ex: 6/9/2018 2:0PM
-    var gameDT = Object.create(DateTime);
-    var dtString = eventEmbed.fields[3].value; //date & time string
-    var dtArray = dtString.split(''); //convert the date time string to an array
+    const gameDT = Object.create(DateTime);
+    const dtString = eventEmbed.fields[3].value; //date & time string
+    const dtArray = dtString.split(''); //convert the date time string to an array
     
-    var startPos = 0;
-    var endPos =0;
-    while(dtArray[endPos] != '/'){
+    let startPos = 0;
+    let endPos = 0;
+    while(dtArray[endPos] != '/')
+    {
         endPos++;
         //console.log(dtArray[endPos]);
     }
     gameDT.month = parseInt(dtString.substring(startPos, endPos));
     console.dir(dtArray);
-    startPos = startPos+2;
-    endPos = endPos+1; //move the start pos to skip over the '/'
-    while(dtArray[endPos] != '/'){endPos++;}
-    var temp = dtString.substring(startPos, endPos);
+    startPos = startPos + 2;
+    endPos = endPos + 1; //move the start pos to skip over the '/'
+    while(dtArray[endPos] != '/') {endPos++;}
+    let temp = dtString.substring(startPos, endPos);
     gameDT.day = parseInt(dtString.substring(startPos, endPos));
 
-    startPos = startPos+2;
-    endPos = endPos+1; //move the start pos to skip over the '/'
-    while(dtArray[endPos] != ' '){endPos++;}
+    startPos = startPos + 2;
+    endPos = endPos + 1; //move the start pos to skip over the '/'
+    while(dtArray[endPos] != ' ') {endPos++;}
     temp = dtString.substring(startPos, endPos);
     gameDT.year = parseInt(dtString.substring(startPos, endPos));
     
     startPos = endPos;
-    endPos = endPos+1;  //move the start pos to skip over the ' '
-    while(dtArray[endPos] != ':'){endPos++;}
+    endPos = endPos + 1; //move the start pos to skip over the ' '
+    while(dtArray[endPos] != ':') {endPos++;}
     //console.log(`startPos:${startPos} , endPos:${endPos}`);
     temp = dtString.substring(startPos, endPos);
     gameDT.hour = parseInt(dtString.substring(startPos, endPos));
     
-    startPos = endPos+1;
-    endPos = endPos+1;  //move the start pos to skip over the ':'
+    startPos = endPos + 1;
+    endPos = endPos + 1; //move the start pos to skip over the ':'
     //console.log(`startPos:${startPos} , endPos:${endPos}`);
-    while(dtArray[endPos] != 'A' && dtArray[endPos] != 'P'){endPos++;}
+    while(dtArray[endPos] != 'A' && dtArray[endPos] != 'P') {endPos++;}
     //console.log(`startPos:${startPos} , endPos:${endPos}`);
     temp = dtString.substring(startPos, endPos);
     //console.log(`temp string ${temp}`);
     gameDT.minute = parseInt(dtString.substring(startPos, endPos));
     
     startPos = endPos;
-    endPos = endPos+2; 
+    endPos = endPos + 2; 
     gameDT.period = dtString.substring(startPos, endPos);
 	
-	var timeZoneCode = 0;
-	switch(eventEmbed.fields[4].value)
-	{
-		case 'Eastern Standard Time (EST)':
-			timeZoneCode = 0;
-			break;
-		case 'Central Standard Time (CST)':
-			timeZoneCode = 1;
-			break;
-		case 'Mountain Standard Time (MST)':
-			timeZoneCode = 2;
-			break;
-		case 'Pacific Standard Time (PST)':
-			timeZoneCode = 3;
-			break;
-		case 'Alaska Standard Time (AKST)':
-			timeZoneCode = 4;
-			break;
-		case 'Hawaii - Aleutian Standard Time (HST)':
-			timeZoneCode = 5;
-			break;
-	}
+    let timeZoneCode = 0;
+    switch(eventEmbed.fields[4].value)
+    {
+    case 'Eastern Standard Time (EST)':
+        timeZoneCode = 0;
+        break;
+    case 'Central Standard Time (CST)':
+        timeZoneCode = 1;
+        break;
+    case 'Mountain Standard Time (MST)':
+        timeZoneCode = 2;
+        break;
+    case 'Pacific Standard Time (PST)':
+        timeZoneCode = 3;
+        break;
+    case 'Alaska Standard Time (AKST)':
+        timeZoneCode = 4;
+        break;
+    case 'Hawaii - Aleutian Standard Time (HST)':
+        timeZoneCode = 5;
+        break;
+    }
 	
-	gameDT.timeZone = timeZoneCode;
+    gameDT.timeZone = timeZoneCode;
     gameEvent.time = gameDT;
     
     //Import accepted, Maybe, and Declined crew based on current reactions
@@ -159,76 +172,86 @@ exports.ImportEvent = async function(eventEmbed, server, client){
     //gameEvent.accepted = reactors;
     //gameEvent.declined = reactors;
     //gameEvent.maybe = reactors;
-    var reactorsAccepted = []; //holds array of user display names who reacted with the accepted emoji 
+    const reactorsAccepted = []; //holds array of user display names who reacted with the accepted emoji 
     console.log('Reactions:');
-    var eventReactions = eventEmbed.message.reactions;
-    var acceptedReacts = eventReactions.find(reaction => reaction.emoji.name === '✅');
+    const eventReactions = eventEmbed.message.reactions;
+    const acceptedReacts = eventReactions.find(reaction => reaction.emoji.name === '✅');
 
-    if(acceptedReacts === undefined )
+    if(acceptedReacts === undefined)
     {
         console.log('A React!!!!!!!!!!!!!!!!!!!!!!1');
         eventEmbed.message.react('✅');
     }
-    var reactUsers = await acceptedReacts.fetchUsers();
+    let reactUsers = await acceptedReacts.fetchUsers();
     reactUsers = reactUsers.array();
     console.dir(reactUsers);
-    for(var i =0; i < reactUsers.length; i++){
-        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName ){
+    for(let i = 0; i < reactUsers.length; i++)
+    {
+        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName)
+        {
             reactorsAccepted.push(server.member(reactUsers[i]).displayName);
         }
     }
     
-    if(reactorsAccepted.length == 0){
+    if(reactorsAccepted.length == 0)
+    {
         reactorsAccepted.push('--------');
     }
     gameEvent.accepted = reactorsAccepted;
     
     //MAYBE Crew Import
-    var reactorsMaybe = []; //holds array of user display names who reacted with the Maybe emoji
-    var maybeReacts = eventReactions.find(reaction => reaction.emoji.name === '❓');
-    if(maybeReacts === undefined )
+    const reactorsMaybe = []; //holds array of user display names who reacted with the Maybe emoji
+    const maybeReacts = eventReactions.find(reaction => reaction.emoji.name === '❓');
+    if(maybeReacts === undefined)
     {
         eventEmbed.message.react('❓');
     }
     reactUsers = await maybeReacts.fetchUsers();
     reactUsers = reactUsers.array();
-    for(var i =0; i < reactUsers.length; i++){
-        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName ){
+    for(let i = 0; i < reactUsers.length; i++)
+    {
+        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName)
+        {
             reactorsMaybe.push(server.member(reactUsers[i]).displayName);
         }
     }
     
-    if(reactorsMaybe.length == 0){
+    if(reactorsMaybe.length == 0)
+    {
         reactorsMaybe.push('--------');
     }
     gameEvent.maybe = reactorsMaybe;
     
     //Import Declined Crew
-    var reactorsDeclined = []; //holds array of user display names who reacted with the Decline emoji
-    var declineReacts = eventReactions.find(reaction => reaction.emoji.name === '❌');
-    if(declineReacts === undefined )
+    const reactorsDeclined = []; //holds array of user display names who reacted with the Decline emoji
+    const declineReacts = eventReactions.find(reaction => reaction.emoji.name === '❌');
+    if(declineReacts === undefined)
     {
         eventEmbed.message.react('❌');
     }
     reactUsers = await declineReacts.fetchUsers();
     reactUsers = reactUsers.array();
-    for(var i =0; i < reactUsers.length; i++){
-        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName ){
-            reactorsDeclined.push(server.member(reactUsers[i]).displayName);
+    for(let reactUserIndex = 0; reactUserIndex < reactUsers.length; reactUserIndex++)
+    {
+        if(server.member(reactUsers[reactUserIndex]).displayName != server.member(client.user).displayName)
+        {
+            reactorsDeclined.push(server.member(reactUsers[reactUserIndex]).displayName);
         }
     }
     
-    if(reactorsDeclined.length == 0){
+    if(reactorsDeclined.length == 0)
+    {
         reactorsDeclined.push('--------');
     }
     gameEvent.declined = reactorsDeclined;
     
     //Import creator
-    var members = server.members.array();
-    for(var i = 0; i < members.length; i++){
-        if(members[i].user.username == eventEmbed.author.name)
+    const members = server.members.array();
+    for(let memberIndex = 0; memberIndex < members.length; memberIndex++)
+    {
+        if(members[memberIndex].user.username == eventEmbed.author.name)
         {
-            gameEvent.creator = members[i].user;
+            gameEvent.creator = members[memberIndex].user;
         }
     }
     
@@ -236,114 +259,172 @@ exports.ImportEvent = async function(eventEmbed, server, client){
     //Import Server & Message
     gameEvent.server = server;
     gameEvent.message = eventEmbed.message;
-    GameEvents.get(gameEvent.server.id).push(gameEvent);
+    gGameEvents.get(gameEvent.server.id).push(gameEvent);
     // console.log('after Push');
-    //console.dir(GameEvents.get(gameEvent.server.id));
+    //console.dir(gGameEvents.get(gameEvent.server.id));
     console.log('event import finish');
     
     //var eventEmbed = GenerateEventEmbed(allEvents[i]);
     //server.owner.send(eventEmbed);
 };
 
-function SetEventDescription(eventCreator, newEvent) {
-    eventCreator.send('Excellent matey! Now what be ye description for the event?').then(message => {
+function SetEventDescription(eventCreator, newEvent) 
+{
+    eventCreator.send('Excellent matey! Now what be ye description for the event?').then(message => 
+    {
         const filter = m => m.author === eventCreator;
-        message.channel.awaitMessages(filter, { max: 1, time: 60000, errors: ['time'] }).then(collected => {
-            newEvent.description = collected.first().content;
+        const messageCollector = message.channel.createMessageCollector(filter, { time: 60000, errors: ['time'] });
+        
+        messageCollector.on('collect', messageCollected => 
+        {
+            newEvent.description = messageCollected.content;
             eventCreator.send(`Ye description be: ${newEvent.description}`);
             SetEventGame(eventCreator, newEvent);
-        })
-        .catch(error => {
-              console.dir(error);
-              if(error.name = 'time') {
-                  eventCreator.send('Time ran out, restart event creation to try again!');
-              }
+            messageCollector.stop("Success");
+        });
+
+        messageCollector.on('end', (collected, reason) =>
+        {
+            console.log(reason);
+            if(reason != "Success")
+            {
+                newEvent.creator.send('Time ran out, restart event creation to try again!');
+            }
         });
     });
-};
+}
 
-function SetEventGame(eventCreator, newEvent) {
-    eventCreator.send('Ay, and what be ye game for this endeavor?').then(message => {
+function SetEventGame(eventCreator, newEvent) 
+{
+    eventCreator.send('Ay, and what be ye game for this endeavor?').then(message => 
+    {
         const filter = m => m.author === eventCreator;
-        message.channel.awaitMessages(filter, { max: 1, time: 60000, errors: ['time'] }).then(collected => {
-            newEvent.game = collected.first().content;
+        const messageCollector = message.channel.createMessageCollector(filter, { time: 60000, errors: ['time'] });
+        
+        messageCollector.on('collect', messageCollected => 
+        {
+            newEvent.game = messageCollected.content;
             eventCreator.send(`Da game be: ${newEvent.game}`);
             SetEventDateTime(eventCreator, newEvent);
-        })
-        .catch(error => {
-              console.dir(error);
-              if(error.name = 'time') {
-                  eventCreator.send('Time ran out, restart event creation to try again!');
-              }
+            messageCollector.stop("Success");
+        }); 
+        
+        messageCollector.on('end', (collected, reason) =>
+        {
+            if(reason != "Success")
+            {
+                newEvent.creator.send('Time ran out, restart event creation to try again!');
+            }
         });
     });
-};
+}
 
-function SetEventDateTime(eventCreator, newEvent) {
-    eventCreator.send('Now when might we be starting? (Provide date and time in this format. \nmonth-day-year-hour-minute-AM(0)/PM(1) \n ex: 02-25-2019-05-25-1)').then(message => {
+function SetEventDateTime(eventCreator, newEvent) 
+{
+    eventCreator.send('Now when might we be starting? (Provide date and time in this format. \nmonth-day-year-hour-minute-AM(0)/PM(1) \n ex: 02-25-2019-05-25-1)').then(message => 
+    {
         const filter = m => m.author === eventCreator;
-        message.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] }).then(collected => {
-            newEvent.time = CreateDateTime(collected.first().content);
-            eventCreator.send(`Ay, we be setting sail: ${newEvent.time.month}/${newEvent.time.day}/${newEvent.time.year} ${newEvent.time.hour}:${newEvent.time.minute}${newEvent.time.period}`);
-            SetTimeZone(eventCreator, newEvent);
-        })
-        .catch(error => {
-            console.dir(error);
-            if(error === 'time') {
-                eventCreator.send('Time ran out, restart event creation to try again!');
+        const messageCollector = message.channel.createMessageCollector(filter, { time: 60000, errors: ['time'] });
+        
+        messageCollector.on('collect', messageCollected => 
+        {
+            try
+            {
+                newEvent.time = CreateDateTime(messageCollected.content);
+                eventCreator.send(`Ay, we be setting sail: ${newEvent.time.month}/${newEvent.time.day}/${newEvent.time.year} ${newEvent.time.hour}:${newEvent.time.minute}${newEvent.time.period}`);
+                SetTimeZone(eventCreator, newEvent);
+                messageCollector.stop("Success");
             }
-            if(error === 'Bad Format') {
-                eventCreator.send('Oy what ye thinking scrub, fix yer formatting!');
-            }
-            if(error === 'Out Of Bounds') {
-                eventCreator.send('One of yer values is invalid, fix it \'er walk the plank!');
-            }
-            if(error === 'Expired Date') {
-                eventCreator.send('We can\'t go into the past lad, enter a date in the future!');
-            }
-			SetTimeZone(eventCreator, newEvent);
+            catch(error) 
+            {
+                console.dir(error);
+                if(error === 'Bad Format') 
+                {
+                    eventCreator.send('Oy what ye thinking scrub, fix yer formatting!');
+                }
+                if(error === 'Out Of Bounds') 
+                {
+                    eventCreator.send('One of yer values is invalid, fix it \'er walk the plank!');
+                }
+                if(error === 'Expired Date') 
+                {
+                    eventCreator.send('We can\'t go into the past lad, enter a date in the future!');
+                }
+            } 
         });
-    });
-};
 
-function SetTimeZone(eventCreator, newEvent){
-	eventCreator.send(`What time zone would this here event be happening in? (Responded with time zone code using chart below: ex: '0' for est) \n
+        messageCollector.on('end', (collected, reason) =>
+        {
+            if(reason != "Success")
+            {
+                newEvent.creator.send('Time ran out, restart event creation to try again!');
+            }
+        });
+            
+    });
+}
+
+function SetTimeZone(eventCreator, newEvent)
+{
+    eventCreator.send(`What time zone would this here event be happening in? (Responded with time zone code using chart below: ex: '0' for est) \n
 	Time Zone Codes:
 	\n 0 = Eastern Standard Time (EST)
 	\n 1 = Central Standard Time (CST)
 	\n 2 = Mountain Standard Time (MST)
 	\n 3 = Pacific Standard Time (PST)
 	\n 4 = Alaska Standard Time (AKST)
-	\n 5 = Hawaii - Aleutian Standard Time (HST)`).then(message => {
+	\n 5 = Hawaii - Aleutian Standard Time (HST)`).then(message => 
+    {
         const filter = m => m.author === eventCreator;
-        message.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] }).then(collected => {
-			let timeCode = parseInt(collected.first().content);
-			
-			if(timeCode > 5 || timeCode <0){
-				throw "Invalid Input";
-			}
-			
-			newEvent.time.timeZone = timeCode;
-			
-			let timeZoneString = timeZoneCodes[timeCode];
-			
-			eventCreator.send(`Ay the time zone be for the event will be ${timeZoneString} `);
-			PostEvent(newEvent);
-		}).catch(error => {
-            console.dir(error);
-            if(error === 'time') {
-                eventCreator.send('Time ran out, restart event creation to try again!');
-            }
-			else if(error === 'Invalid Input'){
-				eventCreator.send('Time zone code is not between 0-5. Please enter a valid time zone code.');
-			}
-			SetTimeZone(eventCreator, newEvent);
-		});
-	});
-};
+        const messageCollector = message.channel.createMessageCollector(filter, { time: 60000, errors: ['time'] });
+        
+        messageCollector.on('collect', messageCollected =>
+        {
+            try
+            {
+                const timeCode = parseInt(messageCollected.content);
+                
+                if(timeCode > 5 || timeCode < 0)
+                {
+                    throw "Invalid Input";
+                }
+            
+                newEvent.time.timeZone = timeCode;
+            
+                const timeZoneString = timeZoneCodes[timeCode];
+                messageCollector.stop("Success");
 
-function DisplayEvent(gameEvent, channel, storeMessage) {
-    let eventMessage = new Discord.RichEmbed();
+                eventCreator.send(`Ay the time zone be for the event will be ${timeZoneString} `)
+                    .then(functionArg => 
+                    {
+                        PostEvent(newEvent);
+                    });
+                
+            }
+            catch(error)
+            {
+                console.dir(error);
+                if(error === 'Invalid Input')
+                {
+                    eventCreator.send('Time zone code is not between 0-5. Please enter a valid time zone code.');
+                }
+            }
+            
+        });
+
+        messageCollector.on('end', (collected, reason) =>
+        {
+            if(reason != "Success")
+            {
+                newEvent.creator.send('Time ran out, restart event creation to try again!');
+            }
+        });
+    });
+}
+
+function DisplayEvent(gameEvent, channel, storeMessage) 
+{
+    const eventMessage = new Discord.RichEmbed();
     
     eventMessage.setTitle("Wanted Event!");
     eventMessage.setColor('#F1C428');
@@ -354,72 +435,89 @@ function DisplayEvent(gameEvent, channel, storeMessage) {
     eventMessage.addField('Description', gameEvent.description);
     eventMessage.addField('Game', gameEvent.game);
     eventMessage.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${gameEvent.time.hour}:${gameEvent.time.minute}${gameEvent.time.period}`);
-    eventMessage.addField("Time Zone:" , timeZoneCodes[gameEvent.time.timeZone]);
+    eventMessage.addField("Time Zone:", timeZoneCodes[gameEvent.time.timeZone]);
 	
     eventMessage.addField("Accepted Crew:", gameEvent.accepted, true);
     eventMessage.addField("Maybe Crew:", gameEvent.maybe, true);
     eventMessage.addField("Declined Crew:", gameEvent.declined, true);
 
-    if(storeMessage == true) {
-        channel.send(eventMessage).then(message => {
-            gameEvent.message = message;
+    if(storeMessage == true) 
+    {
+        channel.send(eventMessage).then(messageEvent => 
+        {
+            gameEvent.message = messageEvent;
             
-            GameEvents.get(gameEvent.server.id).push(gameEvent);
+            gGameEvents.get(gameEvent.server.id).push(gameEvent);
         
             channel.fetchMessage(gameEvent.message.id).then(message=> message.react('✅'));
             channel.fetchMessage(gameEvent.message.id).then(message=> message.react('❓'));
             channel.fetchMessage(gameEvent.message.id).then(message=> message.react('❌'));
         });
     }
-    else {
+    else 
+    {
         channel.send(eventMessage);
     }
-};
+}
 
-function PostEvent(newEvent) {
+function PostEvent(newEvent) 
+{
     DisplayEvent(newEvent, newEvent.creator, false); //Show Event to creator
     
-    newEvent.creator.send('If dis message be correct, respond with a yes. If not, holler a no.').then(message => {
-        const filter = m => true;
-        message.channel.awaitMessages(filter, { max: 1, time: 120000, errors: ['time'] }).then(collected => {
-			console.log('collected!');
-            console.log(collected.first().content);
-            if(collected.first().content === 'yes') {
+    newEvent.creator.send('If dis message be correct, respond with a yes. If not, holler a no.').then(message => 
+    {
+        const filter = m => 
+        {
+            const isEventUser = m.author.username == newEvent.creator.username;
+            return isEventUser;
+        };
+
+        const messageCollector = message.channel.createMessageCollector(filter, { time: 60000, errors: ['time'] });
+        messageCollector.on('collect', messageCollected => 
+        {
+            console.log('collected!');
+            console.log(messageCollected.content);
+            if(messageCollected.content === 'yes') 
+            {
                 newEvent.creator.send('Gotcha, I be letting the crew know then!');
-                var eventChannel = eventChannels.get(newEvent.server.id);
+                const eventChannel = gServerEventChannels.get(newEvent.server.id);
                 //channels.find('name', 'upcoming-quests');
-                
-                DisplayEvent(newEvent, eventChannel, true);       
+
+                DisplayEvent(newEvent, eventChannel, true);
+                messageCollector.stop("Success");
             }
-            else if(collected.first().content === 'no') {
+            else if(messageCollected.content === 'no') 
+            {
                 newEvent.creator.send('Alrighty, lets try again!');
+                messageCollector.stop("Fail");
             }
-            else {
-                throw 'Bad Format';
-            }
-        })
-        .catch(error => {
-            console.dir(error);
-            if(error === 'time') {
-                eventCreator.send('Time ran out, restart event creation to try again!');
-            }
-            if(error === 'Bad Format') {
-                newEvent.creator.send('Oy, we be needing a yes or a no answer!');
-                PostEvent(newEvent);
+            else 
+            {
+                console.log('Bad Format');
             }
         });
-    })
-};
+
+        messageCollector.on('end', (collected, reason) =>
+        {
+            if(reason != "Success" && reason != "Fail")
+            {
+                newEvent.creator.send('Time ran out, restart event creation to try again!');
+            }
+        });
+    });
+}
 
 //Parses String into a DateTime Object
 // month-day-year-hour-minute-AM(0)/PM(1)
 //Format should be 00-00-0000-01-00-1
-function CreateDateTime(dateTimeStr) {
+function CreateDateTime(dateTimeStr) 
+{
     //console.dir(dateTimeStr);
-    var splitDTStr = dateTimeStr.split('-');
-    var dt = DateTime;
+    const splitDTStr = dateTimeStr.split('-');
+    const dt = DateTime;
     
-    if(splitDTStr.length != 6) {
+    if(splitDTStr.length != 6) 
+    {
         console.log(splitDTStr.length);
         throw 'Bad Format';
     }
@@ -434,47 +532,55 @@ function CreateDateTime(dateTimeStr) {
     console.dir(dt);
 
     //Month 
-    if(dt.month < 1 || dt.month > 12) {
+    if(dt.month < 1 || dt.month > 12) 
+    {
         throw 'Out Of Bounds';
     }
     //Day
-    if(1 > dt.day || dt.day > 31) {
+    if(dt.day < 1 || dt.day > 31) 
+    {
         throw 'Out Of Bounds';
     }
     //Year
-    if(dt.year < new Date().getYear()) {
+    if(dt.year < new Date().getYear()) 
+    {
         throw 'Expired Date';
     }
     //Hour
-    if(dt.hour <= 0 || dt.hour >= 13 ) {
+    if(dt.hour <= 0 || dt.hour >= 13) 
+    {
         throw 'Out Of Bounds';
     }
     //Minute
-    if(dt.minute < 0 || dt.minute > 59) {
+    if(dt.minute < 0 || dt.minute > 59) 
+    {
         throw 'Out Of Bounds';
     }
     //AM/PM
-    switch(parseInt(splitDTStr[5])) {
-        case 0:
-            dt.period = "AM";
-            break;
+    switch(parseInt(splitDTStr[5])) 
+    {
+    case 0:
+        dt.period = "AM";
+        break;
             
-        case 1: 
-            dt.period = "PM";
-            break;
+    case 1: 
+        dt.period = "PM";
+        break;
             
-        default:
-            throw 'Out Of Bounds';
-            break;
-    };
+    default:
+        throw 'Out Of Bounds';
+        // eslint-disable-next-line no-unreachable
+        break;
+    }
     
     return dt;
-};
+}
 
-exports.GenerateEventEmbed = function(gameEvent){
+exports.GenerateEventEmbed = function(gameEvent)
+{
     console.dir('EVENT BEGINS!!');
     //console.dir(gameEvent);
-    let eventEmbed = new Discord.RichEmbed();
+    const eventEmbed = new Discord.RichEmbed();
     
     eventEmbed.setTitle("Wanted Event!");
     eventEmbed.setColor('#F1C428');
@@ -484,16 +590,20 @@ exports.GenerateEventEmbed = function(gameEvent){
     eventEmbed.addField('Title', gameEvent.title);
     eventEmbed.addField('Description', gameEvent.description);
     eventEmbed.addField('Game', gameEvent.game);
-    var hourStr;
-    if(gameEvent.time.hour < 10){
+    let hourStr;
+    if(gameEvent.time.hour < 10)
+    {
         hourStr = `0${gameEvent.time.hour}`;
-    }else{hourStr = gameEvent.time.hour;}
-    var minuteStr;
-    if(gameEvent.time.minute < 10){
+    }
+    else{hourStr = gameEvent.time.hour;}
+    let minuteStr;
+    if(gameEvent.time.minute < 10)
+    {
         minuteStr = `0${gameEvent.time.minute}`;
-    }else{minuteStr = gameEvent.time.minute}
+    }
+    else{minuteStr = gameEvent.time.minute;}
     eventEmbed.addField('Date & Time', `${gameEvent.time.month}/${gameEvent.time.day}/${gameEvent.time.year} ${hourStr}:${minuteStr}${gameEvent.time.period}`);
-	eventEmbed.addField("Time Zone", timeZoneCodes[gameEvent.time.timeZone]);
+    eventEmbed.addField("Time Zone", timeZoneCodes[gameEvent.time.timeZone]);
     
     eventEmbed.addField("Accepted Crew:", gameEvent.accepted, true);
     eventEmbed.addField("Maybe Crew:", gameEvent.maybe, true);

@@ -24,9 +24,12 @@
   },
   "homepage": "https://github.com/Josh9309/Quartermaster#readme",
   "dependencies": {
-    "discord.js": "^11.3.2"
+    "discord.io": "^2.5.3",
+    "discord.js": "^11.6.4",
+    "eslint": "^7.21.0",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
-    "nodemon": "^1.17.5"
+    "nodemon": "^2.0.7"
   }
 }
