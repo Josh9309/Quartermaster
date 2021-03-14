@@ -13,7 +13,6 @@ const config = require('./config.json');
 
 //External bot scripts
 const Events = require('./event.js');
-const Games = require('./games.js');
 
 // create a new Discord client
 const client = new discord.Client();
@@ -90,6 +89,14 @@ client.on('message', message =>
     {
         return;
     }
+    
+    //Ignore DMs
+    if (message.channel.type === 'dm') 
+    {
+        message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
+        return;
+    }
+
     //Command handling
     //Alphabetical order
     //Make sure to separate commands that don't work in DMs
@@ -127,39 +134,16 @@ client.on('message', message =>
         ///
         //Launch event creation
     case `${config.prefix}event`:
-    {//Ignore DMs
-        if (message.channel.type === 'dm') 
-        {
-            message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
-            break;
-        }
-
+    {
         message.channel.send('Launching event creation!');
         const discordUser = message.author;
         Events.CreateEvent(discordUser, client, message.guild);
         break;
     }
 
-    //Launch game library
-    case `${config.prefix}games`:
-        //Ignore DMs
-        if (message.channel.type === 'dm') 
-        {
-            message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
-            break;
-        }
-
-        message.channel.send('Pls no');
-        break;
-        //Return server info
+    //Return server info
     case `${config.prefix}server`:
-        //Ignore DMs
-        if (message.channel.type === 'dm') 
-        {
-            message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
-            break;
-        }
-
+        
         embed.setTitle(`${message.guild.name}`);
         embed.setThumbnail(message.guild.iconURL); //Sets the embed thumbnail
         embed.addField('Server owner:', `${message.guild.owner}`);
@@ -169,13 +153,6 @@ client.on('message', message =>
         //Return the requested user's information
     case `${config.prefix}userinfo`:
     {    
-        //Ignore DMs
-        if (message.channel.type === 'dm') 
-        {
-            message.channel.send(`Sorry matey, ye can't use ${command} in a DM.`); //Tell the user that whatever they typed isn't a command
-            break;
-        }
-
         //If there is no requested user
         if (messageArray[1] === undefined) 
         {
@@ -233,7 +210,7 @@ client.on('message', message =>
         }
         break;
     }
-
+        
     case `${config.prefix}embed`: //NOT A COMMAND
     {
         const testEmbed = new discord.RichEmbed();
