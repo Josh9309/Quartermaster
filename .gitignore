@@ -5,3 +5,4 @@ token.json
 #Visual Studio auto-generated folder
 .vs
 .vscode
+*.code-workspace
