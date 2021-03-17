@@ -86,6 +86,7 @@ exports.CreateEvent = function(eventCreator, client, server)
 exports.ImportEvent = async function(eventEmbed, server, client)
 {
     console.log("Event Importing!");
+    if(eventEmbed == null || server == null || client == null || client.user == undefined) { return; }   
     
     const gameEvent = Object.create(event); //Create a new event object
     
@@ -168,10 +169,7 @@ exports.ImportEvent = async function(eventEmbed, server, client)
     gameEvent.time = gameDT;
     
     //Import accepted, Maybe, and Declined crew based on current reactions
-    //var reactors = ['----------'];
-    //gameEvent.accepted = reactors;
-    //gameEvent.declined = reactors;
-    //gameEvent.maybe = reactors;
+    
     const reactorsAccepted = []; //holds array of user display names who reacted with the accepted emoji 
     console.log('Reactions:');
     const eventReactions = eventEmbed.message.reactions;
@@ -187,9 +185,12 @@ exports.ImportEvent = async function(eventEmbed, server, client)
     console.dir(reactUsers);
     for(let i = 0; i < reactUsers.length; i++)
     {
-        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName)
+        if(reactUsers[i] == undefined) { continue; }
+
+        const memberReactor = await server.fetchMember(reactUsers[i]);
+        if(memberReactor != undefined && reactUsers[i].id != client.user.id)
         {
-            reactorsAccepted.push(server.member(reactUsers[i]).displayName);
+            reactorsAccepted.push(memberReactor.displayName);
         }
     }
     
@@ -210,9 +211,12 @@ exports.ImportEvent = async function(eventEmbed, server, client)
     reactUsers = reactUsers.array();
     for(let i = 0; i < reactUsers.length; i++)
     {
-        if(server.member(reactUsers[i]).displayName != server.member(client.user).displayName)
+        if(reactUsers[i] == undefined) { continue; }
+
+        const memberReactor = await server.fetchMember(reactUsers[i]);
+        if(memberReactor != undefined && reactUsers[i].id != client.user.id)
         {
-            reactorsMaybe.push(server.member(reactUsers[i]).displayName);
+            reactorsMaybe.push(memberReactor.displayName);
         }
     }
     
@@ -233,9 +237,12 @@ exports.ImportEvent = async function(eventEmbed, server, client)
     reactUsers = reactUsers.array();
     for(let reactUserIndex = 0; reactUserIndex < reactUsers.length; reactUserIndex++)
     {
-        if(server.member(reactUsers[reactUserIndex]).displayName != server.member(client.user).displayName)
+        if(reactUsers[reactUserIndex] == undefined) { continue; }
+
+        const memberReactor = await server.fetchMember(reactUsers[reactUserIndex]);
+        if(memberReactor != undefined && reactUsers[reactUserIndex].id != client.user.id)
         {
-            reactorsDeclined.push(server.member(reactUsers[reactUserIndex]).displayName);
+            reactorsDeclined.push(memberReactor.displayName);
         }
     }
     
